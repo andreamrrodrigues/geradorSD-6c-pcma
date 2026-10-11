@@ -1,0 +1,1375 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Formulário de Avaliação — Gerador 6C/PCMA</title>
+  
+  <!-- Basecoat CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/basecoat-css@1.0.2/dist/basecoat.cdn.min.css">
+  
+  <!-- Shell System CSS -->
+  <style>
+/* Skip artifact shell — fixed styles served beside every artifact.
+   Complements basecoat; artifacts override --accent for their own identity. */
+:root {
+  color-scheme: light dark;
+  --accent: #2563eb;
+  --accent-contrast: #ffffff;
+  --accent-text: color-mix(in srgb, var(--accent) 72%, #000);
+  --bg: #f8f9fb;
+  --surface: #ffffff;
+  --text: #14171f;
+  --text-muted: #5b6472;
+  --border: rgba(20, 23, 31, 0.10);
+  --radius: 10px;
+  --shadow: 0 1px 3px rgba(20, 23, 31, 0.08);
+  --space: 16px;
+}
+/* Theme resolution. Without data-theme the viewer's system preference decides,
+   as it always did. With it, the artifact's own choice wins in BOTH directions:
+   a page that hardcodes one palette must not be handed the opposite set of
+   tokens by the machine it happens to be opened on. The dark values appear
+   twice because a media query cannot be folded into a selector list.
+   The attribute sits inside :where() so these blocks keep the specificity of a
+   bare :root — the page's own <style> is linked after this file and must go on
+   overriding any token it wants, exactly as it could before. */
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme="light"])) {
+    --accent-text: color-mix(in srgb, var(--accent) 78%, #fff);
+    --bg: #101318;
+    --surface: #181c23;
+    --text: #eef1f6;
+    --text-muted: #9aa4b2;
+    --border: rgba(238, 241, 246, 0.12);
+    --shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+  }
+}
+:root:where([data-theme="dark"]) {
+  color-scheme: dark;
+  --accent-text: color-mix(in srgb, var(--accent) 78%, #fff);
+  --bg: #101318;
+  --surface: #181c23;
+  --text: #eef1f6;
+  --text-muted: #9aa4b2;
+  --border: rgba(238, 241, 246, 0.12);
+  --shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+:root:where([data-theme="light"]) { color-scheme: light; }
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+img { max-width: 100%; display: block; }
+
+.shell-container { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
+.shell-section { padding: calc(var(--space) * 2) 0; }
+.shell-grid { display: grid; gap: var(--space); grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+.shell-toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: var(--space); }
+.shell-footer { padding: 24px 0 40px; color: var(--text-muted); font-size: 13px; }
+
+.shell-hero { padding: calc(var(--space) * 3) 0 calc(var(--space) * 2); }
+.shell-hero h1 { font-size: clamp(26px, 4vw, 40px); line-height: 1.15; margin: 0 0 10px; text-wrap: balance; }
+.shell-hero p { color: var(--text-muted); max-width: 60ch; margin: 0; }
+
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: var(--space);
+}
+
+.kpi { display: flex; flex-direction: column; gap: 4px; }
+.kpi .kpi-value { font-size: 28px; font-weight: 650; line-height: 1.1; }
+.kpi .kpi-label { font-size: 13px; color: var(--text-muted); }
+.kpi .kpi-delta { font-size: 12.5px; font-weight: 600; }
+.kpi .kpi-delta.up { color: #0a8f3c; }
+.kpi .kpi-delta.down { color: #cf3131; }
+
+table.shell-table { border-collapse: collapse; width: 100%; font-size: 14px; }
+table.shell-table th {
+  text-align: left; font-size: 11.5px; letter-spacing: 0.05em; text-transform: uppercase;
+  color: var(--text-muted); font-weight: 600;
+}
+table.shell-table th, table.shell-table td { padding: 9px 12px 9px 0; border-bottom: 1px solid var(--border); }
+table.shell-table td.num, table.shell-table th.num { text-align: right; font-variant-numeric: tabular-nums; }
+table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 6%, transparent); }
+
+.chart-box { width: 100%; min-height: 220px; }
+.chart-box svg { width: 100%; height: auto; display: block; }
+
+.muted { color: var(--text-muted); }
+.accent { color: var(--accent-text); }
+.shell-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 999px;
+  background: color-mix(in srgb, var(--accent) 12%, transparent); color: var(--accent-text);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .shell-fade { animation: shell-fade 400ms ease both; }
+  @keyframes shell-fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+}
+
+</style>
+  
+  <!-- Google Fonts: Inter -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+
+  <style>
+    :root {
+      --accent: #0f766e; /* Azul-petróleo / Verde educacional sóbrio */
+      --accent-rgb: 15, 118, 110;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+    }
+
+    /* Hero & cabeçalho customizado */
+    .eval-header {
+      padding: 2.25rem 1.5rem 1.75rem;
+      background: linear-gradient(180deg, rgba(15, 118, 110, 0.08) 0%, rgba(15, 118, 110, 0) 100%);
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 2rem;
+    }
+
+    .badge-stage {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.3rem 0.75rem;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      background-color: rgba(15, 118, 110, 0.12);
+      color: var(--accent-text);
+      border-radius: 9999px;
+      margin-bottom: 0.75rem;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+    }
+
+    .eval-title {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.25;
+      margin: 0 0 0.5rem 0;
+    }
+
+    .eval-subtitle {
+      font-size: 1.05rem;
+      color: var(--text-muted);
+      margin: 0 0 1.25rem 0;
+      font-weight: 500;
+    }
+
+    /* Banner com o link do protótipo */
+    .prototype-banner {
+      background: var(--surface);
+      border: 2px solid var(--accent);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      box-shadow: 0 4px 12px rgba(15, 118, 110, 0.08);
+      margin-top: 1rem;
+    }
+
+    @media (min-width: 640px) {
+      .prototype-banner {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+      }
+    }
+
+    .prototype-info {
+      font-size: 0.95rem;
+      color: var(--text);
+    }
+
+    .prototype-info strong {
+      display: block;
+      color: var(--accent-text);
+      font-size: 1rem;
+      margin-bottom: 0.2rem;
+    }
+
+    .btn-prototype {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.25rem;
+      background-color: var(--accent);
+      color: #ffffff;
+      font-weight: 600;
+      font-size: 0.95rem;
+      border-radius: var(--radius);
+      text-decoration: none;
+      white-space: nowrap;
+      transition: all 0.15s ease;
+      min-height: 48px;
+    }
+
+    .btn-prototype:hover {
+      background-color: #115e59;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.12);
+    }
+
+    .instruction-callout {
+      background-color: rgba(15, 118, 110, 0.05);
+      border-left: 4px solid var(--accent);
+      padding: 1rem;
+      border-radius: 0 var(--radius) var(--radius) 0;
+      font-size: 0.95rem;
+      color: var(--text);
+      margin: 1.5rem 0;
+    }
+
+    /* Seções do formulário */
+    .form-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      margin-bottom: 1.75rem;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+    }
+
+    .section-heading {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 1.25rem;
+      padding-bottom: 0.6rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .section-number {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      background-color: var(--accent);
+      color: #ffffff;
+      font-size: 0.875rem;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    /* Campos de formulário com touch target generoso */
+    .form-group {
+      margin-bottom: 1.25rem;
+    }
+
+    .form-group:last-child {
+      margin-bottom: 0;
+    }
+
+    .form-label {
+      display: block;
+      font-weight: 600;
+      font-size: 0.95rem;
+      margin-bottom: 0.4rem;
+      color: var(--text);
+    }
+
+    .form-hint {
+      display: block;
+      font-size: 0.8125rem;
+      color: var(--text-muted);
+      margin-bottom: 0.4rem;
+    }
+
+    .form-input, .form-textarea {
+      width: 100%;
+      padding: 0.75rem 0.85rem;
+      font-size: 1rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background-color: var(--bg);
+      color: var(--text);
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+      box-sizing: border-box;
+      font-family: inherit;
+      min-height: 48px;
+    }
+
+    .form-textarea {
+      min-height: 100px;
+      resize: vertical;
+      line-height: 1.45;
+    }
+
+    .form-input:focus, .form-textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.2);
+    }
+
+    /* Likert Items */
+    .likert-legend-box {
+      background: rgba(15, 118, 110, 0.04);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 0.85rem 1rem;
+      font-size: 0.875rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .likert-scale-guide {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem 1.25rem;
+      margin-top: 0.4rem;
+      color: var(--text-muted);
+      font-size: 0.8125rem;
+    }
+
+    .likert-scale-guide span {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .likert-item {
+      padding: 1.1rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--bg);
+      margin-bottom: 1rem;
+      transition: border-color 0.2s, background-color 0.2s;
+    }
+
+    .likert-item.is-invalid {
+      border-color: #dc2626;
+      background-color: rgba(220, 38, 38, 0.03);
+    }
+
+    .likert-item.is-answered {
+      border-color: rgba(15, 118, 110, 0.35);
+      background-color: rgba(15, 118, 110, 0.02);
+    }
+
+    .likert-statement {
+      font-weight: 600;
+      font-size: 1rem;
+      color: var(--text);
+      margin-bottom: 0.3rem;
+      line-height: 1.4;
+    }
+
+    .likert-dimension {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--accent-text);
+      background: rgba(15, 118, 110, 0.1);
+      padding: 0.15rem 0.5rem;
+      border-radius: 4px;
+      margin-bottom: 0.85rem;
+    }
+
+    /* Grade de Opções Likert (otimizada para celular) */
+    .likert-options {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+    }
+
+    @media (max-width: 480px) {
+      .likert-options {
+        gap: 0.35rem;
+      }
+    }
+
+    .likert-option {
+      position: relative;
+    }
+
+    .likert-option input[type="radio"] {
+      position: absolute;
+      opacity: 0;
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0;
+      cursor: pointer;
+      margin: 0;
+      z-index: 2;
+    }
+
+    .likert-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 0.65rem 0.25rem;
+      min-height: 52px;
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: all 0.15s ease;
+      user-select: none;
+      text-align: center;
+    }
+
+    .likert-score {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1;
+    }
+
+    .likert-desc {
+      font-size: 0.6875rem;
+      color: var(--text-muted);
+      margin-top: 0.25rem;
+      display: none; /* Em celular mostra só número para caber lado a lado */
+      line-height: 1.1;
+    }
+
+    @media (min-width: 640px) {
+      .likert-desc {
+        display: block;
+      }
+    }
+
+    /* Estado selecionado */
+    .likert-option input[type="radio"]:checked + .likert-btn {
+      background-color: var(--accent);
+      border-color: var(--accent);
+      color: #ffffff;
+      box-shadow: 0 3px 8px rgba(15, 118, 110, 0.3);
+    }
+
+    .likert-option input[type="radio"]:checked + .likert-btn .likert-score,
+    .likert-option input[type="radio"]:checked + .likert-btn .likert-desc {
+      color: #ffffff;
+    }
+
+    .likert-option input[type="radio"]:focus-visible + .likert-btn {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    /* Botão de Envio */
+    .submit-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+      padding: 1.5rem 0 2rem;
+    }
+
+    .btn-submit {
+      width: 100%;
+      max-width: 440px;
+      padding: 1rem 1.75rem;
+      font-size: 1.1rem;
+      font-weight: 700;
+      background-color: var(--accent);
+      color: #ffffff;
+      border: none;
+      border-radius: var(--radius);
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(15, 118, 110, 0.28);
+      transition: all 0.2s ease;
+      min-height: 52px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.6rem;
+    }
+
+    .btn-submit:hover {
+      background-color: #115e59;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 18px rgba(15, 118, 110, 0.36);
+    }
+
+    .btn-submit:active {
+      transform: translateY(0);
+    }
+
+    .validation-alert {
+      display: none;
+      width: 100%;
+      max-width: 540px;
+      background-color: #fef2f2;
+      border: 1px solid #f87171;
+      color: #991b1b;
+      padding: 0.85rem 1rem;
+      border-radius: var(--radius);
+      font-size: 0.95rem;
+      font-weight: 500;
+      text-align: center;
+    }
+
+    /* Painel de Sucesso pós-envio */
+    .success-card {
+      display: none;
+      background: var(--surface);
+      border: 2px solid var(--accent);
+      border-radius: var(--radius);
+      padding: 2rem 1.5rem;
+      margin: 1.5rem 0 2.5rem;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.06);
+    }
+
+    .success-card.active {
+      display: block;
+      animation: fadeIn 0.3s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .success-header {
+      text-align: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .success-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 56px;
+      height: 56px;
+      background-color: rgba(15, 118, 110, 0.15);
+      color: var(--accent-text);
+      border-radius: 50%;
+      margin-bottom: 0.75rem;
+    }
+
+    .success-title {
+      font-size: 1.45rem;
+      font-weight: 700;
+      color: var(--text);
+      margin: 0 0 0.4rem;
+    }
+
+    .success-instructions {
+      font-size: 0.95rem;
+      color: var(--text);
+      max-width: 580px;
+      margin: 0 auto;
+      line-height: 1.5;
+    }
+
+    .response-preview-box {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem;
+      font-family: monospace;
+      font-size: 0.825rem;
+      max-height: 220px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      word-break: break-word;
+      color: var(--text);
+      margin: 1.25rem 0;
+    }
+
+    .action-buttons-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    @media (min-width: 540px) {
+      .action-buttons-group {
+        flex-direction: row;
+      }
+    }
+
+    .btn-action {
+      flex: 1;
+      padding: 0.85rem 1.25rem;
+      font-size: 0.95rem;
+      font-weight: 600;
+      border-radius: var(--radius);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      min-height: 48px;
+      text-decoration: none;
+      transition: all 0.15s ease;
+    }
+
+    .btn-action-primary {
+      background-color: var(--accent);
+      color: #ffffff;
+      border: 1px solid var(--accent);
+    }
+
+    .btn-action-primary:hover {
+      background-color: #115e59;
+    }
+
+    .btn-action-secondary {
+      background-color: var(--surface);
+      color: var(--accent-text);
+      border: 1px solid var(--accent);
+    }
+
+    .btn-action-secondary:hover {
+      background-color: rgba(15, 118, 110, 0.08);
+    }
+
+    .btn-action-mail {
+      background-color: #334155;
+      color: #ffffff;
+      border: 1px solid #334155;
+    }
+
+    .btn-action-mail:hover {
+      background-color: #1e293b;
+    }
+
+    .feedback-toast {
+      display: none;
+      text-align: center;
+      padding: 0.6rem;
+      background-color: #ecfdf5;
+      color: #065f46;
+      border-radius: var(--radius);
+      border: 1px solid #a7f3d0;
+      font-size: 0.9rem;
+      font-weight: 600;
+      margin-top: 0.75rem;
+    }
+
+    /* Rodapé acadêmico */
+    .eval-footer {
+      background-color: var(--surface);
+      border-top: 1px solid var(--border);
+      padding: 2rem 1.5rem;
+      margin-top: 3rem;
+      font-size: 0.875rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    .eval-footer-inner {
+      max-width: 760px;
+      margin: 0 auto;
+    }
+
+    .eval-footer strong {
+      color: var(--text);
+    }
+
+    /* Layout do Container */
+    .main-wrap {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 0 1rem;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Cabeçalho -->
+  <header class="eval-header">
+    <div class="main-wrap">
+      <span class="badge-stage">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+        Etapa 4 — Validação com Professores
+      </span>
+      <h1 class="eval-title">Avaliação do Gerador 6C/PCMA — Formulário do Professor</h1>
+      <p class="eval-subtitle">Validação do protótipo-piloto de Ciências da Natureza (Ensino Médio) — metodologia 6C/PCMA</p>
+
+      <!-- Banner de Acesso ao Protótipo -->
+      <div class="prototype-banner">
+        <div class="prototype-info">
+          <strong>Acesso ao Protótipo do Gerador</strong>
+          <span>Acesse o gerador para testar a criação de sequências didáticas reais antes de avaliar:</span>
+        </div>
+        <a href="https://andreamrrodrigues.github.io/geradorSD-6c-pcma/" target="_blank" rel="noopener noreferrer" class="btn-prototype">
+          <span>Abrir Gerador 6C/PCMA</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+        </a>
+      </div>
+
+      <div class="instruction-callout">
+        <strong>Instruções:</strong> Gere 1 ou 2 sequências com conteúdos reais da sua disciplina no gerador e responda ao questionário abaixo (leva cerca de 10 minutos). Sua avaliação é fundamental para o aprimoramento da ferramenta pedagógica!
+      </div>
+    </div>
+  </header>
+
+  <!-- Conteúdo Principal -->
+  <main class="main-wrap">
+
+    <form id="evalForm" novalidate>
+
+      <!-- SEÇÃO 1: Identificação -->
+      <section class="form-card" aria-labelledby="sec1-title">
+        <h2 id="sec1-title" class="section-heading">
+          <span class="section-number">1</span>
+          <span>Identificação do Professor</span>
+        </h2>
+
+        <div class="form-group">
+          <label for="profNome" class="form-label">Nome do(a) Professor(a) <span class="muted">(opcional)</span></label>
+          <input type="text" id="profNome" name="nome" class="form-input" placeholder="Ex.: Profa. Maria Silva">
+        </div>
+
+        <div class="form-group">
+          <label for="profDisciplina" class="form-label">Disciplina / Área de Atuação <span class="accent">*</span></label>
+          <span class="form-hint">Ex.: Química, Física, Biologia, Ciências da Natureza</span>
+          <input type="text" id="profDisciplina" name="disciplina" class="form-input" placeholder="Ex.: Biologia / Ciências da Natureza" required>
+        </div>
+
+        <div class="form-group">
+          <label for="profSerie" class="form-label">Ano / Série em que leciona <span class="accent">*</span></label>
+          <span class="form-hint">Ex.: 1º ao 3º ano do Ensino Médio</span>
+          <input type="text" id="profSerie" name="serie" class="form-input" placeholder="Ex.: 1º e 2º ano do Ensino Médio" required>
+        </div>
+
+        <div class="form-group">
+          <label for="profTempo" class="form-label">Tempo de docência <span class="accent">*</span></label>
+          <span class="form-hint">Ex.: Menos de 2 anos, 5 anos, mais de 10 anos</span>
+          <input type="text" id="profTempo" name="tempo" class="form-input" placeholder="Ex.: 8 anos" required>
+        </div>
+      </section>
+
+      <!-- SEÇÃO 2: Escala Likert -->
+      <section class="form-card" aria-labelledby="sec2-title">
+        <h2 id="sec2-title" class="section-heading">
+          <span class="section-number">2</span>
+          <span>Avaliação Objetiva (Escala Likert de 1 a 5)</span>
+        </h2>
+
+        <div class="likert-legend-box">
+          <strong>Legenda de pontuação:</strong>
+          <div class="likert-scale-guide">
+            <span><strong>1:</strong> Discordo totalmente</span>
+            <span><strong>2:</strong> Discordo</span>
+            <span><strong>3:</strong> Neutro</span>
+            <span><strong>4:</strong> Concordo</span>
+            <span><strong>5:</strong> Concordo totalmente</span>
+          </div>
+        </div>
+
+        <!-- Afirmação 1 -->
+        <fieldset class="likert-item" id="item-q1">
+          <legend class="likert-statement">1. As instruções do gerador são claras e fáceis de seguir.</legend>
+          <span class="likert-dimension">Dimensão: Clareza</span>
+          <div class="likert-options" role="radiogroup" aria-label="Avaliação: Clareza">
+            <label class="likert-option">
+              <input type="radio" name="q1_clareza" value="1" required>
+              <span class="likert-btn"><span class="likert-score">1</span><span class="likert-desc">Discordo tot.</span></span>
+            </label>
+            <label class="likert-option">
+              <input type="radio" name="q1_clareza" value="2">
+              <span class="likert-btn"><span class="likert-score">2</span><span class="likert-desc">Discordo</span></span>
+            </label>
+            <label class="likert-option">
+              <input type="radio" name="q1_clareza" value="3">
+              <span class="likert-btn"><span class="likert-score">3</span><span class="likert-desc">Neutro</span></span>
+            </label>
+            <label class="likert-option">
+              <input type="radio" name="q1_clareza" value="4">
+              <span class="likert-btn"><span class="likert-score">4</span><span class="likert-desc">Concordo</span></span>
+            </label>
+            <label class="likert-option">
+              <input type="radio" name="q1_clareza" value="5">
+              <span class="likert-btn"><span class="likert-score">5</span><span class="likert-desc">Concordo tot.</span></span>
+            </label>
+          </div>
+        </fieldset>
+
+        <!-- Afirmação 2 -->
+        <fieldset class="likert-item" id="item-q2">
+          <legend class="likert-statement">2. A sequência gerada pode ser aplicada diretamente em sala de aula.</legend>
+          <span class="likert-dimension">Dimensão: Aplicabilidade</span>
+          <div class="likert-options" role="radiogroup" aria-label="Avaliação: Aplicabilidade">
+            <label class="likert-option">
+              <input type="radio" name="q2_aplicabilidade" value="1" required>
+              <span class="likert-btn"><span class="likert-score">1</span><span class="likert-desc">Discordo tot.</span></span>
+            </label>
+            <label class="likert-option">
+              <input type="radio" name="q2_aplicabilidade" value="2">
+              <span class="likert-btn"><span class="likert-score">2</span><span class="likert-desc">Discordo</span></span>
+            </label>
+            <label class="likert-option">
+              <input type="radio" name="q2_aplicabilidade" value="3">
+              <span class="likert-btn"><span class="likert-score">3</span><span class="likert-desc">Neutro</span></span>
+            </label>
+            <label class="likert-option">
+              <input type="radio" name="q2_aplicabilidade" value="4">
+              <span class="likert-btn"><span class="likert-score">4</span><span class="likert-desc">Concordo</span></span>
+            </label>
+            <label class="likert-option">
+              <input type="radio" name="q2_aplicabilidade" value="5">
+              <span class="likert-btn"><span class="likert-score">5</span><span class="likert-desc">Concordo tot.</span></span>
+            </label>
+          </div>
+        </fieldset>
+
+        <!-- Afirmação 3 -->
+        <fieldset class="likert-item" id="item-q3">
+          <legend class="likert-statement">3. As sugestões de atividades são pertinentes ao conteúdo que informei.</legend>
+          <span class="likert-dimension">Dimensão: Pertinência</span>
+          <div class="likert-options" role="radiogroup" aria-label="Avaliação: Pertinência">
+            <label class="likert-option">
+              <input type="radio" name="q3_pertinencia" value="1" required>
+              <span class="likert-btn"><span class="likert-score">1</span><span class="likert-desc">Discordo tot.</span></span>
+            </label>
+            <label class="likert-option">
+              <input type="radio" name="q3_pertinencia" value="2">
+              <span class="likert-btn"><span class="likert-score">2</span><span class="likert-desc">Discordo</span></span>
+            </label>
+            <label class="likert-option">
+              <input type="radio" name="q3_pertinencia" value="3">
+              <span class="likert-btn"><span class="likert-score">3</span><span class="likert-desc">Neutro</span></span>
+            </label>
+            <label class="likert-option">
+              <input type="radio" name="q3_pertinencia" value="4">
+              <span class="likert-btn"><span class="likert-score">4</span><span class="likert-desc">Concordo</span></span>
+            </label>
+            <label class="likert-option">
+              <input type="radio" name="q3_pertinencia" value="5">
+              <span class="likert-btn"><span class="likert-score">5</span><span class="likert-desc">Concordo tot.</span></span>
+            </label>
+          </div>
+        </fieldset>
+
+        <!-- Afirmação 4 -->
+        <fieldset class="likert-item" id="item-q4">
+          <legend class="likert-statement">4. A sequência está alinhada às competências e habilidades da BNCC.</legend>
+          <span class="likert-dimension">Dimensão: Alinhamento à BNCC</span>
+          <div class="likert-options" role="radiogroup" aria-label="Avaliação: Alinhamento BNCC">
+            <label class="likert-option">
+              <input type="radio" name="q4_bncc" value="1" required>
+              <span class="likert-btn"><span class="likert-score">1</span><span class="likert-desc">Discordo tot.</span></span>
+            </label>
+            <label class="likert-option">
+              <input type="radio" name="q4_bncc" value="2">
+              <span class="likert-btn"><span class="likert-score">2</span><span class="likert-desc">Discordo</span></span>
+            </label>
+            <label class="likert-option">
+              <input type="radio" name="q4_bncc" value="3">
+              <span class="likert-btn"><span class="likert-score">3</span><span class="likert-desc">Neutro</span></span>
+            </label>
+            <label class="likert-option">
+              <input type="radio" name="q4_bncc" value="4">
+              <span class="likert-btn"><span class="likert-score">4</span><span class="likert-desc">Concordo</span></span>
+            </label>
+            <label class="likert-option">
+              <input type="radio" name="q4_bncc" value="5">
+              <span class="likert-btn"><span class="likert-score">5</span><span class="likert-desc">Concordo tot.</span></span>
+            </label>
+          </div>
+        </fieldset>
+
+        <!-- Afirmação 5 -->
+        <fieldset class="likert-item" id="item-q5">
+          <legend class="likert-statement">5. As 6 fases aparecem de forma coerente e bem encadeada.</legend>
+          <span class="likert-dimension">Dimensão: Coerência Metodológica (6C/PCMA)</span>
+          <div class="likert-options" role="radiogroup" aria-label="Avaliação: Coerência Metodológica">
+            <label class="likert-option">
+              <input type="radio" name="q5_coerencia" value="1" required>
+              <span class="likert-btn"><span class="likert-score">1</span><span class="likert-desc">Discordo tot.</span></span>
+            </label>
+            <label class="likert-option">
+              <input type="radio" name="q5_coerencia" value="2">
+              <span class="likert-btn"><span class="likert-score">2</span><span class="likert-desc">Discordo</span></span>
+            </label>
+            <label class="likert-option">
+              <input type="radio" name="q5_coerencia" value="3">
+              <span class="likert-btn"><span class="likert-score">3</span><span class="likert-desc">Neutro</span></span>
+            </label>
+            <label class="likert-option">
+              <input type="radio" name="q5_coerencia" value="4">
+              <span class="likert-btn"><span class="likert-score">4</span><span class="likert-desc">Concordo</span></span>
+            </label>
+            <label class="likert-option">
+              <input type="radio" name="q5_coerencia" value="5">
+              <span class="likert-btn"><span class="likert-score">5</span><span class="likert-desc">Concordo tot.</span></span>
+            </label>
+          </div>
+        </fieldset>
+
+        <!-- Afirmação 6 -->
+        <fieldset class="likert-item" id="item-q6">
+          <legend class="likert-statement">6. O tempo estimado das atividades é compatível com a aula.</legend>
+          <span class="likert-dimension">Dimensão: Viabilidade Temporal</span>
+          <div class="likert-options" role="radiogroup" aria-label="Avaliação: Viabilidade">
+            <label class="likert-option">
+              <input type="radio" name="q6_viabilidade" value="1" required>
+              <span class="likert-btn"><span class="likert-score">1</span><span class="likert-desc">Discordo tot.</span></span>
+            </label>
+            <label class="likert-option">
+              <input type="radio" name="q6_viabilidade" value="2">
+              <span class="likert-btn"><span class="likert-score">2</span><span class="likert-desc">Discordo</span></span>
+            </label>
+            <label class="likert-option">
+              <input type="radio" name="q6_viabilidade" value="3">
+              <span class="likert-btn"><span class="likert-score">3</span><span class="likert-desc">Neutro</span></span>
+            </label>
+            <label class="likert-option">
+              <input type="radio" name="q6_viabilidade" value="4">
+              <span class="likert-btn"><span class="likert-score">4</span><span class="likert-desc">Concordo</span></span>
+            </label>
+            <label class="likert-option">
+              <input type="radio" name="q6_viabilidade" value="5">
+              <span class="likert-btn"><span class="likert-score">5</span><span class="likert-desc">Concordo tot.</span></span>
+            </label>
+          </div>
+        </fieldset>
+      </section>
+
+      <!-- SEÇÃO 3: Questões Abertas -->
+      <section class="form-card" aria-labelledby="sec3-title">
+        <h2 id="sec3-title" class="section-heading">
+          <span class="section-number">3</span>
+          <span>Percepções Qualitativas (Questões Abertas)</span>
+        </h2>
+
+        <div class="form-group">
+          <label for="openPontosFortes" class="form-label">Quais são os pontos fortes da sequência gerada?</label>
+          <textarea id="openPontosFortes" name="pontos_fortes" class="form-textarea" placeholder="Descreva os aspectos mais positivos, a clareza das atividades, engajamento proposto, etc."></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="openMelhorias" class="form-label">O que você ajustaria ou melhoraria?</label>
+          <textarea id="openMelhorias" name="melhorias" class="form-textarea" placeholder="Sugestões de alterações nas fases, linguagem, dinâmicas ou materiais sugeridos."></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="openRefleteConteudo" class="form-label">A sequência reflete o conteúdo que você informou? Comente.</label>
+          <textarea id="openRefleteConteudo" name="reflete_conteudo" class="form-textarea" placeholder="Comente sobre a fidelidade e profundidade dos conceitos científicos apresentados."></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="openUsoPlanejamento" class="form-label">Você usaria este gerador no seu planejamento? Por quê?</label>
+          <textarea id="openUsoPlanejamento" name="uso_planejamento" class="form-textarea" placeholder="Indique se adotaria a ferramenta na sua rotina pedagógica e suas razões."></textarea>
+        </div>
+      </section>
+
+      <!-- Botão de Envio e Alerta de Validação -->
+      <div class="submit-container">
+        <div id="validationAlert" class="validation-alert" role="alert">
+          Por favor, avalie todas as 6 afirmações da escala Likert antes de enviar.
+        </div>
+
+        <button type="submit" class="btn-submit" id="btnSubmit">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+          <span>Finalizar e Gerar Resumo da Avaliação</span>
+        </button>
+      </div>
+
+    </form>
+
+    <!-- SEÇÃO DE SUCESSO / AÇÕES (Aparece após o envio) -->
+    <div id="successPanel" class="success-card" aria-live="polite">
+      <div class="success-header">
+        <div class="success-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg>
+        </div>
+        <h3 class="success-title">Obrigada pela sua avaliação!</h3>
+        <p class="success-instructions">
+          Sua contribuição é essencial para a pesquisa. Para consolidar os dados, <strong>copie</strong> ou <strong>baixe</strong> o resumo gerado abaixo e envie para a pesquisadora <strong>Andrea Maria Rocha Rodrigues</strong> via WhatsApp ou E-mail.
+        </p>
+      </div>
+
+      <label for="responsePreview" class="form-label"><strong>Resumo estruturado das suas respostas:</strong></label>
+      <div id="responsePreview" class="response-preview-box"></div>
+
+      <div class="action-buttons-group">
+        <button type="button" id="btnCopy" class="btn-action btn-action-primary">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+          <span>Copiar respostas</span>
+        </button>
+
+        <button type="button" id="btnDownload" class="btn-action btn-action-secondary">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+          <span>Baixar respostas (.txt)</span>
+        </button>
+
+        <a id="btnMail" href="#" class="btn-action btn-action-mail" target="_blank" rel="noopener noreferrer">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+          <span>Enviar por E-mail</span>
+        </a>
+      </div>
+
+      <div id="copyFeedback" class="feedback-toast" role="status">
+        ✓ Resumo copiado para a área de transferência com sucesso! Cole na mensagem para a pesquisadora.
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Rodapé Institucional -->
+  <footer class="eval-footer">
+    <div class="eval-footer-inner">
+      <p><strong>Autoria:</strong> Andrea Maria Rocha Rodrigues. Protótipo desenvolvido como produto da disciplina Produção e Uso de Materiais Didáticos — Doutorado RENOEN/IFCE.</p>
+      <p style="margin-top: 0.5rem;">Rede Nordeste de Ensino (RENOEN) · Instituto Federal do Ceará (IFCE) · PCMA: Procedimento Cognitivo Metodológico de Apreensão.</p>
+    </div>
+  </footer>
+
+  <!-- Shell JS (auxiliar) -->
+  
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const form = document.getElementById('evalForm');
+      const validationAlert = document.getElementById('validationAlert');
+      const successPanel = document.getElementById('successPanel');
+      const responsePreview = document.getElementById('responsePreview');
+      const btnCopy = document.getElementById('btnCopy');
+      const btnDownload = document.getElementById('btnDownload');
+      const btnMail = document.getElementById('btnMail');
+      const copyFeedback = document.getElementById('copyFeedback');
+
+      const likertQuestions = [
+        { name: 'q1_clareza', label: '1. Clareza das instruções', itemId: 'item-q1' },
+        { name: 'q2_aplicabilidade', label: '2. Aplicabilidade em sala de aula', itemId: 'item-q2' },
+        { name: 'q3_pertinencia', label: '3. Pertinência das sugestões', itemId: 'item-q3' },
+        { name: 'q4_bncc', label: '4. Alinhamento à BNCC', itemId: 'item-q4' },
+        { name: 'q5_coerencia', label: '5. Coerência metodológica (6 fases)', itemId: 'item-q5' },
+        { name: 'q6_viabilidade', label: '6. Viabilidade temporal das aulas', itemId: 'item-q6' }
+      ];
+
+      const likertScaleTexts = {
+        '1': '1 - Discordo totalmente',
+        '2': '2 - Discordo',
+        '3': '3 - Neutro',
+        '4': '4 - Concordo',
+        '5': '5 - Concordo totalmente'
+      };
+
+      // Realçar itens respondidos ao clicar
+      likertQuestions.forEach(q => {
+        const radios = form.querySelectorAll(`input[name="${q.name}"]`);
+        const itemEl = document.getElementById(q.itemId);
+        radios.forEach(radio => {
+          radio.addEventListener('change', () => {
+            if (itemEl) {
+              itemEl.classList.add('is-answered');
+              itemEl.classList.remove('is-invalid');
+            }
+            validationAlert.style.display = 'none';
+          });
+        });
+      });
+
+      // Gerador do texto do relatório
+      function generateReportText(data) {
+        const now = new Date();
+        const dateStr = now.toLocaleDateString('pt-BR') + ' às ' + now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+
+        let report = `========================================================\n`;
+        report += `AVALIAÇÃO DO GERADOR 6C/PCMA — RESUMO DE RESPOSTAS\n`;
+        report += `Pesquisa: Doutorado RENOEN/IFCE — Andrea Maria Rocha Rodrigues\n`;
+        report += `Data de preenchimento: ${dateStr}\n`;
+        report += `========================================================\n\n`;
+
+        report += `[ 1. IDENTIFICAÇÃO DO PROFESSOR ]\n`;
+        report += `• Nome: ${data.nome || '(Não informado / anônimo)'}\n`;
+        report += `• Disciplina / Área: ${data.disciplina || '(Não informado)'}\n`;
+        report += `• Ano / Série: ${data.serie || '(Não informado)'}\n`;
+        report += `• Tempo de docência: ${data.tempo || '(Não informado)'}\n\n`;
+
+        report += `[ 2. AVALIAÇÃO OBJETIVA — ESCALA LIKERT (1 a 5) ]\n`;
+        likertQuestions.forEach(q => {
+          const val = data[q.name];
+          const textVal = likertScaleTexts[val] || val;
+          report += `• ${q.label}: [ ${textVal} ]\n`;
+        });
+        report += `\n`;
+
+        report += `[ 3. QUESTÕES ABERTAS ]\n`;
+        report += `• Pontos fortes da sequência:\n${data.pontos_fortes ? '  ' + data.pontos_fortes.replace(/\n/g, '\n  ') : '  (Sem comentários)'}\n\n`;
+        report += `• O que ajustaria ou melhoraria:\n${data.melhorias ? '  ' + data.melhorias.replace(/\n/g, '\n  ') : '  (Sem comentários)'}\n\n`;
+        report += `• Reflete o conteúdo informado?:\n${data.reflete_conteudo ? '  ' + data.reflete_conteudo.replace(/\n/g, '\n  ') : '  (Sem comentários)'}\n\n`;
+        report += `• Usaria no planejamento? Por quê?:\n${data.uso_planejamento ? '  ' + data.uso_planejamento.replace(/\n/g, '\n  ') : '  (Sem comentários)'}\n\n`;
+
+        report += `========================================================\n`;
+        report += `Obrigada pela sua colaboração com a pesquisa de validação!\n`;
+        return report;
+      }
+
+      let generatedReport = '';
+
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+
+        // 1. Validar se todas as questões da escala Likert foram preenchidas
+        let missingQuestion = null;
+        likertQuestions.forEach(q => {
+          const selected = form.querySelector(`input[name="${q.name}"]:checked`);
+          const itemEl = document.getElementById(q.itemId);
+          if (!selected) {
+            if (itemEl) itemEl.classList.add('is-invalid');
+            if (!missingQuestion) missingQuestion = q;
+          } else {
+            if (itemEl) itemEl.classList.remove('is-invalid');
+          }
+        });
+
+        if (missingQuestion) {
+          validationAlert.style.display = 'block';
+          const firstInvalid = document.getElementById(missingQuestion.itemId);
+          if (firstInvalid) {
+            firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+          return;
+        }
+
+        // 2. Coletar dados
+        const formData = new FormData(form);
+        const dataObj = {};
+        for (const [key, value] of formData.entries()) {
+          dataObj[key] = value.trim();
+        }
+
+        // Salvar cópia local de segurança
+        try {
+          localStorage.setItem('avaliacao_gerador_6c_pcma', JSON.stringify({
+            data: dataObj,
+            timestamp: new Date().toISOString()
+          }));
+        } catch (_) {}
+
+        // 3. Montar o texto formatado
+        generatedReport = generateReportText(dataObj);
+        responsePreview.textContent = generatedReport;
+
+        // Configurar botão de mailto
+        const mailSubject = encodeURIComponent("Avaliação Gerador 6C/PCMA - Respostas do Professor");
+        const mailBody = encodeURIComponent(generatedReport);
+        btnMail.href = `mailto:?subject=${mailSubject}&body=${mailBody}`;
+
+        // 4. Exibir painel de sucesso
+        successPanel.classList.add('active');
+        successPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+
+      // Copiar respostas para Clipboard
+      btnCopy.addEventListener('click', async () => {
+        if (!generatedReport) return;
+        try {
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            await navigator.clipboard.writeText(generatedReport);
+          } else {
+            // Fallback para navegadores antigos
+            const textarea = document.createElement('textarea');
+            textarea.value = generatedReport;
+            textarea.style.position = 'fixed';
+            textarea.style.opacity = '0';
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+          }
+
+          copyFeedback.style.display = 'block';
+          btnCopy.innerHTML = `
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            <span>Copiado!</span>
+          `;
+          setTimeout(() => {
+            btnCopy.innerHTML = `
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+              <span>Copiar respostas</span>
+            `;
+          }, 3000);
+        } catch (err) {
+          alert('Não foi possível copiar automaticamente. Selecione e copie o texto diretamente da caixa de resumo.');
+        }
+      });
+
+      // Baixar arquivo .txt
+      btnDownload.addEventListener('click', () => {
+        if (!generatedReport) return;
+        const blob = new Blob([generatedReport], { type: 'text/plain;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        const filename = 'avaliacao_gerador_6c_pcma_' + new Date().toISOString().slice(0,10) + '.txt';
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      });
+    });
+  </script>
+<script>
+/* Skip artifact shell — fixed helpers served beside every artifact. */
+(function () {
+  "use strict";
+
+  var fmt = {
+    num: function (v, opts) { return new Intl.NumberFormat("pt-BR", opts || {}).format(v); },
+    brl: function (v) { return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(v); },
+    pct: function (v) { return new Intl.NumberFormat("pt-BR", { style: "percent", maximumFractionDigits: 1 }).format(v); }
+  };
+
+  // axisFmt keeps axis tick labels short (compact notation) so long values
+  // (e.g. full BRL amounts) never clip against the plot edge.
+  function axisFmt(v) {
+    return fmt.num(v, { notation: "compact", maximumFractionDigits: 1 });
+  }
+
+  // format accepts a function OR one of the fmt names ("num" | "brl" | "pct").
+  function coerceFormat(spec) {
+    if (typeof spec === "function") return spec;
+    if (typeof spec === "string" && fmt[spec]) return fmt[spec];
+    return function (v) { return fmt.num(v); };
+  }
+
+  function accent() {
+    return getComputedStyle(document.documentElement).getPropertyValue("--accent").trim() || "#2563eb";
+  }
+  function mutedColor() {
+    return getComputedStyle(document.documentElement).getPropertyValue("--text-muted").trim() || "#5b6472";
+  }
+  function svgEl(tag, attrs) {
+    var el = document.createElementNS("http://www.w3.org/2000/svg", tag);
+    for (var k in attrs) el.setAttribute(k, attrs[k]);
+    return el;
+  }
+  function frame(el, w, h) {
+    var svg = svgEl("svg", { viewBox: "0 0 " + w + " " + h, role: "img" });
+    el.innerHTML = "";
+    el.appendChild(svg);
+    return svg;
+  }
+
+  // maxOf guards the axis scale: empty values would give -Infinity (truthy,
+  // so "|| 1" can't catch it) and a non-positive max would flip the chart.
+  function maxOf(values) {
+    var m = values.length ? Math.max.apply(null, values) : 0;
+    return m > 0 ? m : 1;
+  }
+
+  // bar(el, {labels:[], values:[], color?, format?}) — vertical bar chart.
+  function bar(el, cfg) {
+    var W = 640, H = 280, padL = 46, padB = 30, padT = 12;
+    var svg = frame(el, W, H);
+    var max = maxOf(cfg.values);
+    var n = cfg.values.length;
+    var plotW = W - padL - 12, plotH = H - padT - padB;
+    var step = plotW / n, bw = Math.min(step * 0.62, 64);
+    var color = cfg.color || accent();
+    var f = coerceFormat(cfg.format);
+    for (var g = 0; g <= 4; g++) {
+      var gy = padT + plotH - (plotH * g) / 4;
+      svg.appendChild(svgEl("line", { x1: padL, y1: gy, x2: W - 12, y2: gy, stroke: "currentColor", "stroke-opacity": 0.08 }));
+      var lbl = svgEl("text", { x: padL - 8, y: gy + 4, "text-anchor": "end", "font-size": 10, fill: mutedColor() });
+      lbl.textContent = axisFmt((max * g) / 4);
+      svg.appendChild(lbl);
+    }
+    cfg.values.forEach(function (v, i) {
+      var bh = Math.max(0, (v / max) * plotH);
+      var x = padL + i * step + (step - bw) / 2;
+      var y = padT + plotH - bh;
+      var r = svgEl("rect", { x: x, y: y, width: bw, height: bh, rx: 4, fill: color });
+      var t = svgEl("title", {});
+      t.textContent = cfg.labels[i] + ": " + f(v);
+      r.appendChild(t);
+      svg.appendChild(r);
+      var tx = svgEl("text", { x: x + bw / 2, y: H - 10, "text-anchor": "middle", "font-size": 11, fill: mutedColor() });
+      tx.textContent = cfg.labels[i];
+      svg.appendChild(tx);
+    });
+  }
+
+  // line(el, {labels:[], values:[], color?, format?}) — single-series line.
+  function line(el, cfg) {
+    var W = 640, H = 280, padL = 46, padB = 30, padT = 12;
+    var svg = frame(el, W, H);
+    var max = maxOf(cfg.values);
+    var n = cfg.values.length;
+    var plotW = W - padL - 16, plotH = H - padT - padB;
+    var color = cfg.color || accent();
+    var f = coerceFormat(cfg.format);
+    for (var g = 0; g <= 4; g++) {
+      var gy = padT + plotH - (plotH * g) / 4;
+      svg.appendChild(svgEl("line", { x1: padL, y1: gy, x2: W - 16, y2: gy, stroke: "currentColor", "stroke-opacity": 0.08 }));
+      var lbl = svgEl("text", { x: padL - 8, y: gy + 4, "text-anchor": "end", "font-size": 10, fill: mutedColor() });
+      lbl.textContent = axisFmt((max * g) / 4);
+      svg.appendChild(lbl);
+    }
+    var pts = cfg.values.map(function (v, i) {
+      var x = padL + (n === 1 ? plotW / 2 : (plotW * i) / (n - 1));
+      var y = padT + plotH - (v / max) * plotH;
+      return [x, y];
+    });
+    var d = pts.map(function (p, i) { return (i ? "L" : "M") + p[0].toFixed(1) + " " + p[1].toFixed(1); }).join(" ");
+    svg.appendChild(svgEl("path", { d: d, fill: "none", stroke: color, "stroke-width": 2, "stroke-linejoin": "round" }));
+    pts.forEach(function (p, i) {
+      var c = svgEl("circle", { cx: p[0], cy: p[1], r: 3.5, fill: color });
+      var t = svgEl("title", {});
+      t.textContent = cfg.labels[i] + ": " + f(cfg.values[i]);
+      c.appendChild(t);
+      svg.appendChild(c);
+      var tx = svgEl("text", { x: p[0], y: H - 10, "text-anchor": "middle", "font-size": 11, fill: mutedColor() });
+      tx.textContent = cfg.labels[i];
+      svg.appendChild(tx);
+    });
+  }
+
+  // donut(el, {labels:[], values:[], colors?}) — donut with center total.
+  function donut(el, cfg) {
+    var W = 320, H = 280, cx = W / 2, cy = H / 2, R = 92, r = 58;
+    var svg = frame(el, W, H);
+    var total = cfg.values.reduce(function (a, b) { return a + b; }, 0) || 1;
+    var palette = cfg.colors || [accent(), "#1baf7a", "#eda100", "#e34948", "#4a3aa7", "#e87ba4"];
+    var a0 = -Math.PI / 2;
+    cfg.values.forEach(function (v, i) {
+      var a1 = a0 + (v / total) * Math.PI * 2;
+      var large = a1 - a0 > Math.PI ? 1 : 0;
+      var p = ["M", cx + R * Math.cos(a0), cy + R * Math.sin(a0),
+        "A", R, R, 0, large, 1, cx + R * Math.cos(a1), cy + R * Math.sin(a1),
+        "L", cx + r * Math.cos(a1), cy + r * Math.sin(a1),
+        "A", r, r, 0, large, 0, cx + r * Math.cos(a0), cy + r * Math.sin(a0), "Z"].join(" ");
+      var path = svgEl("path", { d: p, fill: palette[i % palette.length] });
+      var t = svgEl("title", {});
+      t.textContent = cfg.labels[i] + ": " + fmt.num(v) + " (" + fmt.pct(v / total) + ")";
+      path.appendChild(t);
+      svg.appendChild(path);
+      a0 = a1;
+    });
+    var center = svgEl("text", { x: cx, y: cy + 5, "text-anchor": "middle", "font-size": 20, "font-weight": 650, fill: "currentColor" });
+    center.textContent = fmt.num(total);
+    svg.appendChild(center);
+  }
+
+  window.skipShell = { fmt: fmt };
+  window.skipChart = { bar: bar, line: line, donut: donut };
+})();
+
+</script>
+</body>
+</html>
