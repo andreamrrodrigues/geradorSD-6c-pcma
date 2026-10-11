@@ -1,0 +1,1546 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gerador 6C/PCMA — Sequências Didáticas</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@600;700&display=swap">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/basecoat-css@1.0.2/dist/basecoat.cdn.min.css">
+  <style>
+/* Skip artifact shell — fixed styles served beside every artifact.
+   Complements basecoat; artifacts override --accent for their own identity. */
+:root {
+  color-scheme: light dark;
+  --accent: #2563eb;
+  --accent-contrast: #ffffff;
+  --accent-text: color-mix(in srgb, var(--accent) 72%, #000);
+  --bg: #f8f9fb;
+  --surface: #ffffff;
+  --text: #14171f;
+  --text-muted: #5b6472;
+  --border: rgba(20, 23, 31, 0.10);
+  --radius: 10px;
+  --shadow: 0 1px 3px rgba(20, 23, 31, 0.08);
+  --space: 16px;
+}
+/* Theme resolution. Without data-theme the viewer's system preference decides,
+   as it always did. With it, the artifact's own choice wins in BOTH directions:
+   a page that hardcodes one palette must not be handed the opposite set of
+   tokens by the machine it happens to be opened on. The dark values appear
+   twice because a media query cannot be folded into a selector list.
+   The attribute sits inside :where() so these blocks keep the specificity of a
+   bare :root — the page's own <style> is linked after this file and must go on
+   overriding any token it wants, exactly as it could before. */
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme="light"])) {
+    --accent-text: color-mix(in srgb, var(--accent) 78%, #fff);
+    --bg: #101318;
+    --surface: #181c23;
+    --text: #eef1f6;
+    --text-muted: #9aa4b2;
+    --border: rgba(238, 241, 246, 0.12);
+    --shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+  }
+}
+:root:where([data-theme="dark"]) {
+  color-scheme: dark;
+  --accent-text: color-mix(in srgb, var(--accent) 78%, #fff);
+  --bg: #101318;
+  --surface: #181c23;
+  --text: #eef1f6;
+  --text-muted: #9aa4b2;
+  --border: rgba(238, 241, 246, 0.12);
+  --shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+:root:where([data-theme="light"]) { color-scheme: light; }
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+img { max-width: 100%; display: block; }
+
+.shell-container { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
+.shell-section { padding: calc(var(--space) * 2) 0; }
+.shell-grid { display: grid; gap: var(--space); grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+.shell-toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: var(--space); }
+.shell-footer { padding: 24px 0 40px; color: var(--text-muted); font-size: 13px; }
+
+.shell-hero { padding: calc(var(--space) * 3) 0 calc(var(--space) * 2); }
+.shell-hero h1 { font-size: clamp(26px, 4vw, 40px); line-height: 1.15; margin: 0 0 10px; text-wrap: balance; }
+.shell-hero p { color: var(--text-muted); max-width: 60ch; margin: 0; }
+
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: var(--space);
+}
+
+.kpi { display: flex; flex-direction: column; gap: 4px; }
+.kpi .kpi-value { font-size: 28px; font-weight: 650; line-height: 1.1; }
+.kpi .kpi-label { font-size: 13px; color: var(--text-muted); }
+.kpi .kpi-delta { font-size: 12.5px; font-weight: 600; }
+.kpi .kpi-delta.up { color: #0a8f3c; }
+.kpi .kpi-delta.down { color: #cf3131; }
+
+table.shell-table { border-collapse: collapse; width: 100%; font-size: 14px; }
+table.shell-table th {
+  text-align: left; font-size: 11.5px; letter-spacing: 0.05em; text-transform: uppercase;
+  color: var(--text-muted); font-weight: 600;
+}
+table.shell-table th, table.shell-table td { padding: 9px 12px 9px 0; border-bottom: 1px solid var(--border); }
+table.shell-table td.num, table.shell-table th.num { text-align: right; font-variant-numeric: tabular-nums; }
+table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 6%, transparent); }
+
+.chart-box { width: 100%; min-height: 220px; }
+.chart-box svg { width: 100%; height: auto; display: block; }
+
+.muted { color: var(--text-muted); }
+.accent { color: var(--accent-text); }
+.shell-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 999px;
+  background: color-mix(in srgb, var(--accent) 12%, transparent); color: var(--accent-text);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .shell-fade { animation: shell-fade 400ms ease both; }
+  @keyframes shell-fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+}
+
+</style>
+  
+  <style>
+    :root {
+      --accent: #0b7285;
+      --accent-soft: #e3fafc;
+      --accent-deep: #0c4a6e;
+      --font-display: 'Space Grotesk', system-ui, sans-serif;
+      --font-body: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      --card-1c: #0284c7;
+      --card-2c: #dc2626;
+      --card-3c: #d97706;
+      --card-4c: #7c3aed;
+      --card-5c: #059669;
+      --card-6c: #2563eb;
+      --card-curiosidade: #0284c7;
+      --card-confianca: #dc2626;
+      --card-contestacao: #d97706;
+      --card-comparacao: #7c3aed;
+      --card-contexto: #059669;
+      --card-consolidacao: #2563eb;
+    }
+
+    body {
+      font-family: var(--font-body);
+      background-color: #f8fafc;
+      color: #1e293b;
+      line-height: 1.5;
+    }
+
+    h1, h2, h3, h4 {
+      font-family: var(--font-display);
+      letter-spacing: -0.02em;
+    }
+
+    .app-header {
+      background: linear-gradient(135deg, #0c4a6e 0%, #0f766e 100%);
+      color: #ffffff;
+      padding: 2.25rem 1rem 2rem;
+      border-bottom: 3px solid #14b8a6;
+      box-shadow: 0 4px 20px -5px rgba(12, 74, 110, 0.3);
+    }
+
+    .app-header-inner {
+      max-width: 1040px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .badge-capsule {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(255, 255, 255, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.28);
+      color: #f0fdfa;
+      padding: 0.3rem 0.85rem;
+      border-radius: 9999px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      width: fit-content;
+      backdrop-filter: blur(4px);
+    }
+
+    .app-title {
+      font-size: 1.95rem;
+      font-weight: 800;
+      color: #ffffff;
+      margin: 0;
+      line-height: 1.2;
+    }
+
+    @media (min-width: 640px) {
+      .app-title {
+        font-size: 2.35rem;
+      }
+    }
+
+    .app-subtitle {
+      font-size: 1.05rem;
+      color: #ccfbf1;
+      margin: 0;
+      font-weight: 500;
+    }
+
+    .app-container {
+      max-width: 1040px;
+      margin: -1.25rem auto 3rem;
+      padding: 0 1rem;
+    }
+
+    /* Explanation Accordion & Chips */
+    .methodology-overview {
+      background: #ffffff;
+      border-radius: 14px;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .methodology-summary-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 1.02rem;
+      color: #0f172a;
+      user-select: none;
+    }
+
+    .methodology-steps-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 0.75rem;
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px dashed #cbd5e1;
+    }
+
+    .step-pill {
+      background: #f1f5f9;
+      border-radius: 10px;
+      padding: 0.65rem 0.75rem;
+      border-left: 4px solid var(--accent);
+      font-size: 0.82rem;
+    }
+
+    .step-pill strong {
+      display: block;
+      color: #0f172a;
+      font-size: 0.85rem;
+    }
+
+    .step-pill span {
+      color: #475569;
+      font-size: 0.75rem;
+      line-height: 1.2;
+      display: block;
+      margin-top: 0.2rem;
+    }
+
+    /* Form Container */
+    .generator-card {
+      background: #ffffff;
+      border-radius: 16px;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.06);
+      padding: 1.75rem;
+      margin-bottom: 2rem;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.25rem;
+    }
+
+    @media (min-width: 768px) {
+      .form-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+      .col-span-2 {
+        grid-column: span 2;
+      }
+    }
+
+    .field-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    .field-label {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: #1e293b;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .field-label .required {
+      color: #ef4444;
+    }
+
+    .field-hint {
+      font-size: 0.78rem;
+      color: #64748b;
+      margin-top: 0.15rem;
+    }
+
+    .input-control, .select-control, .textarea-control {
+      width: 100%;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 10px;
+      padding: 0.75rem 0.9rem;
+      font-size: 0.95rem;
+      font-family: inherit;
+      color: #0f172a;
+      background-color: #ffffff;
+      transition: all 0.2s ease;
+      box-sizing: border-box;
+    }
+
+    .input-control:focus, .select-control:focus, .textarea-control:focus {
+      outline: none;
+      border-color: #0f766e;
+      box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.18);
+    }
+
+    .textarea-control {
+      min-height: 85px;
+      resize: vertical;
+    }
+
+    /* Presets Quick Picker */
+    .quick-examples {
+      margin-top: 0.4rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      align-items: center;
+    }
+
+    .quick-examples-title {
+      font-size: 0.76rem;
+      font-weight: 700;
+      color: #475569;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .quick-btn {
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      padding: 0.25rem 0.6rem;
+      font-size: 0.76rem;
+      color: #1e293b;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.15s ease;
+    }
+
+    .quick-btn:hover {
+      background: #e2e8f0;
+      border-color: #94a3b8;
+      color: #0f172a;
+    }
+
+    .form-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-top: 1.5rem;
+      align-items: center;
+    }
+
+    .btn-main {
+      background: #0f766e;
+      color: #ffffff;
+      font-weight: 700;
+      border: none;
+      border-radius: 10px;
+      padding: 0.85rem 1.6rem;
+      font-size: 1rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 10px rgba(15, 118, 110, 0.25);
+    }
+
+    .btn-main:hover {
+      background: #115e59;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 14px rgba(15, 118, 110, 0.3);
+    }
+
+    .btn-outline {
+      background: transparent;
+      color: #475569;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 10px;
+      padding: 0.85rem 1.3rem;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .btn-outline:hover {
+      background: #f1f5f9;
+      color: #0f172a;
+      border-color: #94a3b8;
+    }
+
+    /* Sequence Presentation Section */
+    #sequenceOutput {
+      display: none;
+      animation: fadeIn 0.3s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .output-header-bar {
+      background: #ffffff;
+      border-radius: 14px 14px 0 0;
+      border: 1px solid #e2e8f0;
+      border-bottom: 2px solid #0f766e;
+      padding: 1.25rem 1.5rem;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .output-info-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem 1rem;
+      font-size: 0.88rem;
+      color: #334155;
+      margin-top: 0.35rem;
+    }
+
+    .meta-tag {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      padding: 0.25rem 0.6rem;
+      border-radius: 6px;
+      font-weight: 600;
+      color: #0f766e;
+    }
+
+    .action-toolbar {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .btn-action-sm {
+      font-size: 0.85rem;
+      padding: 0.55rem 0.95rem;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      border: 1px solid #cbd5e1;
+      background: #ffffff;
+      color: #1e293b;
+      transition: all 0.15s ease;
+    }
+
+    .btn-action-sm:hover {
+      background: #f8fafc;
+      border-color: #94a3b8;
+    }
+
+    .btn-print {
+      background: #0284c7;
+      color: #ffffff;
+      border-color: #0284c7;
+    }
+
+    .btn-print:hover {
+      background: #0369a1;
+      border-color: #0369a1;
+      color: #ffffff;
+    }
+
+    /* 6 Cards Grid */
+    .sequence-cards-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.25rem;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-top: none;
+      border-radius: 0 0 14px 14px;
+      padding: 1.5rem;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+    }
+
+    @media (min-width: 860px) {
+      .sequence-cards-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    .phase-card {
+      background: #ffffff;
+      border-radius: 12px;
+      border: 1.5px solid #e2e8f0;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.03);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .phase-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 18px rgba(0, 0, 0, 0.07);
+    }
+
+    .phase-card-header {
+      padding: 0.85rem 1.15rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      color: #ffffff;
+    }
+
+    .phase-badge-num {
+      width: 28px;
+      height: 28px;
+      background: rgba(255, 255, 255, 0.25);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 0.85rem;
+      flex-shrink: 0;
+    }
+
+    .phase-header-text h3 {
+      margin: 0;
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #ffffff;
+      line-height: 1.2;
+    }
+
+    .phase-header-text span {
+      font-size: 0.75rem;
+      opacity: 0.95;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    /* Distinct Phase Themes */
+    .card-fase-1 .phase-card-header { background: linear-gradient(135deg, #0369a1, #0284c7); }
+    .card-fase-1 { border-top: 4px solid #0284c7; }
+
+    .card-fase-2 .phase-card-header { background: linear-gradient(135deg, #b91c1c, #dc2626); }
+    .card-fase-2 { border-top: 4px solid #dc2626; }
+
+    .card-fase-3 .phase-card-header { background: linear-gradient(135deg, #b45309, #d97706); }
+    .card-fase-3 { border-top: 4px solid #d97706; }
+
+    .card-fase-4 .phase-card-header { background: linear-gradient(135deg, #6d28d9, #8b5cf6); }
+    .card-fase-4 { border-top: 4px solid #8b5cf6; }
+
+    .card-fase-5 .phase-card-header { background: linear-gradient(135deg, #047857, #059669); }
+    .card-fase-5 { border-top: 4px solid #059669; }
+
+    .card-fase-6 .phase-card-header { background: linear-gradient(135deg, #1d4ed8, #2563eb); }
+    .card-fase-6 { border-top: 4px solid #2563eb; }
+
+    .phase-card-body {
+      padding: 1.15rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.9rem;
+      flex-grow: 1;
+      font-size: 0.9rem;
+    }
+
+    .section-block {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .block-label {
+      font-size: 0.76rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: #64748b;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .block-label svg {
+      width: 14px;
+      height: 14px;
+      opacity: 0.85;
+    }
+
+    .block-content {
+      color: #1e293b;
+      line-height: 1.45;
+    }
+
+    .highlight-question {
+      background: #f8fafc;
+      border-left: 3px solid #0f766e;
+      padding: 0.6rem 0.75rem;
+      border-radius: 0 6px 6px 0;
+      font-style: italic;
+      color: #0f172a;
+      font-weight: 600;
+      font-size: 0.92rem;
+    }
+
+    .bncc-box {
+      margin-top: auto;
+      background: #f1f5f9;
+      border: 1px dashed #cbd5e1;
+      border-radius: 8px;
+      padding: 0.55rem 0.75rem;
+      font-size: 0.8rem;
+      color: #334155;
+    }
+
+    .bncc-box strong {
+      color: #0f172a;
+      display: block;
+      margin-bottom: 0.15rem;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    /* Objectives summary bar inside output */
+    .objectives-card {
+      background: #f0fdfa;
+      border: 1px solid #99f6e4;
+      border-radius: 10px;
+      padding: 0.85rem 1.15rem;
+      margin-bottom: 1.25rem;
+      color: #134e4a;
+      font-size: 0.9rem;
+    }
+
+    .objectives-card strong {
+      color: #0f766e;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      display: block;
+      margin-bottom: 0.2rem;
+    }
+
+    /* Toast notification */
+    .toast-notice {
+      position: fixed;
+      bottom: 1.5rem;
+      right: 1.5rem;
+      background: #0f172a;
+      color: #ffffff;
+      padding: 0.75rem 1.2rem;
+      border-radius: 8px;
+      font-size: 0.88rem;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+      display: none;
+      z-index: 1000;
+      animation: slideUp 0.2s ease-out;
+    }
+
+    @keyframes slideUp {
+      from { transform: translateY(15px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    /* Footer */
+    .app-footer {
+      text-align: center;
+      padding: 2.5rem 1rem 3rem;
+      border-top: 1px solid #e2e8f0;
+      color: #64748b;
+      font-size: 0.84rem;
+      line-height: 1.6;
+    }
+
+    .app-footer p {
+      max-width: 680px;
+      margin: 0.25rem auto;
+    }
+
+    .app-footer .affil {
+      font-weight: 600;
+      color: #334155;
+    }
+
+    /* Print styles */
+    @media print {
+      body {
+        background: #ffffff !important;
+        color: #000000 !important;
+        font-size: 11pt;
+      }
+
+      .app-header,
+      .methodology-overview,
+      .generator-card,
+      .action-toolbar,
+      .app-footer,
+      .toast-notice {
+        display: none !important;
+      }
+
+      .app-container {
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+
+      #sequenceOutput {
+        display: block !important;
+      }
+
+      .output-header-bar {
+        border: none !important;
+        border-bottom: 2pt solid #000000 !important;
+        padding: 0 0 10pt 0 !important;
+      }
+
+      .print-doc-header {
+        display: block !important;
+        margin-bottom: 15pt;
+      }
+
+      .sequence-cards-grid {
+        display: block !important;
+        border: none !important;
+        padding: 0 !important;
+        box-shadow: none !important;
+      }
+
+      .phase-card {
+        page-break-inside: avoid;
+        margin-bottom: 14pt !important;
+        border: 1pt solid #444444 !important;
+        box-shadow: none !important;
+      }
+
+      .phase-card-header {
+        background: #e2e8f0 !important;
+        color: #000000 !important;
+        border-bottom: 1pt solid #cbd5e1;
+        padding: 6pt 10pt !important;
+      }
+
+      .phase-badge-num {
+        background: #475569 !important;
+        color: #ffffff !important;
+      }
+
+      .phase-header-text h3 {
+        color: #000000 !important;
+        font-size: 12pt !important;
+      }
+
+      .phase-header-text span {
+        color: #334155 !important;
+      }
+
+      .highlight-question {
+        background: #f1f5f9 !important;
+        border-left: 3pt solid #334155 !important;
+      }
+
+      .bncc-box {
+        background: #fafafa !important;
+        border: 1pt solid #ccc !important;
+      }
+    }
+
+    .print-doc-header {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Banner / Header -->
+  <header class="app-header">
+    <div class="app-header-inner">
+      <div class="badge-capsule">
+        <span>PCMA: Procedimento Cognitivo Metodológico de Apreensão</span>
+      </div>
+      <h1 class="app-title">Gerador 6C/PCMA — Sequências Didáticas</h1>
+      <p class="app-subtitle">Metodologia 6C/PCMA &middot; Alinhado à BNCC</p>
+    </div>
+  </header>
+
+  <main class="app-container">
+
+    <!-- Brief Explanation Accordion -->
+    <section class="methodology-overview" aria-label="Apresentação da Metodologia">
+      <div style="background: #f0fdfa; border: 1.5px solid #99f6e4; border-radius: 10px; padding: 0.85rem 1.15rem; margin-bottom: 1rem; font-size: 0.88rem; color: #134e4a; display: flex; align-items: flex-start; gap: 0.65rem;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0f766e" stroke-width="2" style="flex-shrink:0; margin-top:1px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <div>
+          <strong style="color: #0f766e; display: inline;">Componente-Piloto:</strong>
+          <span> Este protótipo implementa o componente-piloto Ciências da Natureza e suas Tecnologias (Ensino Médio). A expansão para os demais componentes curriculares está prevista para após a validação da matriz.</span>
+        </div>
+      </div>
+      <div class="methodology-summary-title" id="toggleOverview" role="button" tabindex="0" aria-expanded="true">
+        <span>Fases da Metodologia 6C/PCMA (Procedimento Cognitivo Metodológico de Apreensão)</span>
+        <span id="overviewChevron" style="font-size: 0.85rem; color: #0f766e;">&#x25B2; Ocultar</span>
+      </div>
+      <div id="overviewBody" class="methodology-steps-grid">
+        <div class="step-pill" style="border-left-color: var(--card-1c);">
+          <strong>1C — Consolidação dos conhecimentos prévios</strong>
+          <span>Certificação, pelo professor, de que o aluno domina as teorias e conceitos ligados ao conteúdo — os subsunçores da Teoria da Aprendizagem Significativa (Ausubel). Usa sondagem, pré-teste, brainstorming.</span>
+        </div>
+        <div class="step-pill" style="border-left-color: var(--card-2c);">
+          <strong>2C — Conscientização de conflitos empíricos</strong>
+          <span>O aluno percebe o conflito entre seus conceitos prévios do cotidiano e os conceitos científicos; o professor apresenta situações que o senso comum não explica, provocando conflito cognitivo.</span>
+        </div>
+        <div class="step-pill" style="border-left-color: var(--card-3c);">
+          <strong>3C — Constatação das concepções alternativas</strong>
+          <span>Intervenção do professor para constatar as concepções alternativas dos alunos e auxiliá-los na reestruturação teórica, buscando teorias alternativas que justifiquem o fenômeno.</span>
+        </div>
+        <div class="step-pill" style="border-left-color: var(--card-4c);">
+          <strong>4C — Comparação com teorias científicas</strong>
+          <span>Formulação e apresentação das teorias científicas que explicam o fenômeno, garantindo a comparação sistemática entre o que o aluno já conhecia e o conteúdo novo.</span>
+        </div>
+        <div class="step-pill" style="border-left-color: var(--card-5c);">
+          <strong>5C — Convergência para uma evolução conceitual</strong>
+          <span>O aluno modifica suas concepções prévias apoiado em recursos metacognitivos, tecnológicos, laboratoriais e/ou virtuais (mapas conceituais, gamificação, TDIC); sugere-se pós-teste e comparação antes-depois.</span>
+        </div>
+        <div class="step-pill" style="border-left-color: var(--card-6c);">
+          <strong>6C — Confirmação por meio de fórmulas</strong>
+          <span>Formalização e registro sistemático dos resultados: gráficos, diagramas, tabelas, equações, infográficos, fluxogramas; uso de Mapa Conceitual, Mapa Mental, Quadro SQA e V Epistemológico.</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Generator Input Form -->
+    <section class="generator-card" aria-label="Formulário do Planejamento">
+      <form id="planForm" novalidate>
+        <div class="form-grid">
+          
+          <!-- Ano / Série (Ensino Médio) -->
+          <div class="field-group col-span-2">
+            <label for="gradeSelect" class="field-label">
+              Ano / Série do Ensino Médio <span class="required">*</span>
+            </label>
+            <select id="gradeSelect" class="select-control" required>
+              <option value="1ª série do Ensino Médio" selected>1ª série do Ensino Médio</option>
+              <option value="2ª série do Ensino Médio">2ª série do Ensino Médio</option>
+              <option value="3ª série do Ensino Médio">3ª série do Ensino Médio</option>
+            </select>
+            <span class="field-hint">Componente-piloto: Ciências da Natureza e suas Tecnologias (Física, Química e Biologia). A BNCC do EM não serializa habilidades por ano/série; a seleção ajusta a modulação pedagógica da sequência.</span>
+          </div>
+
+          <!-- Conteúdo Temático -->
+          <div class="field-group col-span-2">
+            <label for="themeInput" class="field-label">
+              Conteúdo a ser trabalhado <span class="required">*</span>
+            </label>
+            <input 
+              type="text" 
+              id="themeInput" 
+              class="input-control" 
+              placeholder="Ex.: Termodinâmica e propagação de calor, Cinética química, Genética mendeliana, Leis de Newton..." 
+              required
+              autocomplete="off"
+            >
+            <div class="quick-examples">
+              <span class="quick-examples-title">Exemplos rápidos:</span>
+              <button type="button" class="quick-btn" data-grade="1ª série do Ensino Médio" data-theme="Termodinâmica e propagação de calor" data-obj="Compreender as transformações e transferências de calor superando concepções espontâneas e aplicando os modelos científicos da Termodinâmica.">Termodinâmica (Física · 1ª série)</button>
+              <button type="button" class="quick-btn" data-grade="2ª série do Ensino Médio" data-theme="Cinética química e velocidade das reações" data-obj="Investigar os fatores que alteram a velocidade de reações químicas confrontando o senso comum com o modelo de colisões e energia de ativação.">Cinética Química (Química · 2ª série)</button>
+              <button type="button" class="quick-btn" data-grade="3ª série do Ensino Médio" data-theme="Genética mendeliana e hereditariedade" data-obj="Analisar os padrões de herança biológica e transmissão de caracteres por meio de modelos probabilísticos e cromossômicos.">Genética (Biologia · 3ª série)</button>
+              <button type="button" class="quick-btn" data-grade="1ª série do Ensino Médio" data-theme="Leis de Newton e dinâmica do movimento" data-obj="Investigar as interações de forças e aceleração confrontando a visão espontânea aristotélica com os princípios da Mecânica Clássica.">Leis de Newton (Física · 1ª série)</button>
+              <button type="button" class="quick-btn" data-grade="2ª série do Ensino Médio" data-theme="Eletroquímica e pilhas galvânicas" data-obj="Interpretar as transformações de energia química em energia elétrica com base em reações de oxidorredução e potenciais padrão de redução.">Eletroquímica (Química · 2ª série)</button>
+            </div>
+          </div>
+
+          <!-- Objetivos de Aprendizagem -->
+          <div class="field-group col-span-2">
+            <label for="objectivesInput" class="field-label">
+              Objetivos de aprendizagem (opcional)
+            </label>
+            <textarea 
+              id="objectivesInput" 
+              class="textarea-control" 
+              placeholder="Descreva o que os estudantes devem saber, compreender ou ser capazes de realizar ao final da sequência..."
+            ></textarea>
+            <span class="field-hint">Caso deixe em branco, objetivos alinhados à metodologia 6C/PCMA serão gerados automaticamente.</span>
+          </div>
+
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn-main" id="btnGenerate">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+            Gerar Sequência Didática
+          </button>
+          <button type="button" class="btn-outline" id="btnReset">
+            Nova Sequência
+          </button>
+        </div>
+      </form>
+    </section>
+
+    <!-- Sequence Output Section -->
+    <section id="sequenceOutput" aria-live="polite">
+      
+      <!-- Print Document Header (Visible only in print mode) -->
+      <div class="print-doc-header">
+        <h2 style="font-size: 16pt; margin: 0 0 4pt 0;">PLANO DE SEQUÊNCIA DIDÁTICA — METODOLOGIA 6C/PCMA</h2>
+        <div style="font-size: 10pt; color: #333; margin-bottom: 12pt; border-bottom: 1pt solid #ccc; padding-bottom: 6pt;">
+          PCMA: Procedimento Cognitivo Metodológico de Apreensão &middot; Alinhado à BNCC
+        </div>
+      </div>
+
+      <!-- Header of the result -->
+      <div class="output-header-bar">
+        <div>
+          <h2 style="margin: 0; font-size: 1.35rem; color: #0f172a;" id="outputTitleDisplay">Sequência didática — 1ª série do Ensino Médio</h2>
+          <div class="output-info-meta">
+            <span class="meta-tag" id="metaSubjectBadge">Ciências da Natureza e suas Tecnologias (EM)</span>
+            <span class="meta-tag" id="metaGradeBadge">1ª série do Ensino Médio</span>
+            <span style="display: flex; align-items: center; gap: 0.3rem;" id="metaThemeBadge">
+              <strong>Conteúdo:</strong> <em>Termodinâmica e propagação de calor</em>
+            </span>
+          </div>
+        </div>
+        <div class="action-toolbar">
+          <button type="button" class="btn-action-sm btn-print" id="btnPrint">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+            Imprimir / Salvar PDF
+          </button>
+          <button type="button" class="btn-action-sm" id="btnCopyText">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            Copiar Texto
+          </button>
+        </div>
+      </div>
+
+      <div style="background: #ffffff; border: 1px solid #e2e8f0; border-top: none; padding: 1.25rem 1.5rem 0;">
+        <div class="objectives-card" id="outputObjectivesBox">
+          <strong>Objetivo(s) Pedagógico(s) da Sequência:</strong>
+          <span id="outputObjectivesText"></span>
+        </div>
+      </div>
+
+      <!-- Six Phase Cards -->
+      <div class="sequence-cards-grid" id="cardsContainer">
+        <!-- Rendered via JavaScript -->
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- Notification Toast -->
+  <div id="toast" class="toast-notice" role="status"></div>
+
+  <!-- Educational Project Footer -->
+  <footer class="app-footer">
+    <p>Autoria: Andrea Maria Rocha Rodrigues. Protótipo desenvolvido como produto da disciplina Produção e Uso de Materiais Didáticos — Doutorado RENOEN/IFCE. Rede Nordeste de Ensino (RENOEN) · Instituto Federal do Ceará (IFCE) · PCMA: Procedimento Cognitivo Metodológico de Apreensão.</p>
+  </footer>
+
+  <script>
+    /**
+     * Componente-Piloto: Ciências da Natureza e suas Tecnologias — Ensino Médio (Física, Química e Biologia)
+     * Metodologia 6C/PCMA (Procedimento Cognitivo Metodológico de Apreensão)
+     */
+    const PILOT_MATRIX = {
+      fases: [
+        {
+          num: 1,
+          code: "1C",
+          name: "Consolidação dos conhecimentos prévios",
+          faseClass: "card-fase-1",
+          subtitle: "Fase 1 — Diagnóstico e Consolidação de Subsunçores",
+          question: (conteudo) => `O que os alunos já dominam dos conceitos que sustentam o ${conteudo}?`,
+          action: (conteudo) => `Certifica os subsunçores: diagnostica e consolida os conhecimentos prévios necessários ao ${conteudo}`,
+          templates: [
+            (conteudo, grade) => grade.includes('1ª')
+              ? `Sondagem diagnóstica: aplique um pré-teste ou questionário diagnóstico estruturado (sem nota) sobre os conceitos-base do ${conteudo}, com condução orientada do professor para mapear os subsunçores da turma`
+              : grade.includes('3ª')
+                ? `Sondagem diagnóstica: aplique um pré-teste conceitual investigativo (sem nota) sobre os conceitos-base do ${conteudo}, promovendo autoavaliação autônoma dos estudantes sobre suas âncoras cognitivas`
+                : `Sondagem diagnóstica: aplique um pré-teste ou questionário diagnóstico (sem nota) sobre os conceitos-base do ${conteudo}, identificando o que a turma já domina`,
+            (conteudo, grade) => grade.includes('1ª')
+              ? `Brainstorming guiado: conduza uma tempestade de ideias no quadro sobre os conceitos prévios que sustentam o ${conteudo}, com mediação direta das noções cotidianas dos alunos`
+              : grade.includes('3ª')
+                ? `Brainstorming investigativo: grupos de estudantes mapeiam de forma autônoma os conceitos que sustentam o ${conteudo}, sintetizando em esquemas prévios o que precisa ser retomado`
+                : `Brainstorming: conduza um brainstorming sobre os conceitos que sustentam o ${conteudo} e registre o que precisa ser retomado antes de avançar`,
+            (conteudo, grade) => grade.includes('1ª')
+              ? `Retomada dirigida: a partir da sondagem, retome passo a passo os subsunçores essenciais ao ${conteudo} (aula dialogada apoiada em recursos visuais), assegurando nivelamento homogêneo`
+              : grade.includes('3ª')
+                ? `Retomada autônoma: disponibilize material de revisão e curadoria conceitual sobre os subsunçores do ${conteudo}, estimulando consulta autônoma para consolidação antes de avançar`
+                : `Retomada dirigida: a partir da sondagem, retome os subsunçores essenciais ao ${conteudo} (aula dialogada, vídeo curto, revisão rápida), garantindo base mínima comum`
+          ],
+          bncc: "Sem habilidade EM13CNT obrigatória — fase de diagnóstico; quando os subsunçores envolvem modelos científicos, a EM13CNT201 pode ser mobilizada: <em>'Analisar e discutir modelos, teorias e leis propostos em diferentes épocas e culturas para comparar distintas explicações sobre o surgimento e a evolução da Vida, da Terra e do Cosmos com as teorias científicas aceitas na atualidade.'</em> (CE 2)",
+          generalCompetency: "Competência Geral 1 (conhecimento)"
+        },
+        {
+          num: 2,
+          code: "2C",
+          name: "Conscientização de conflitos empíricos",
+          faseClass: "card-fase-2",
+          subtitle: "Fase 2 — Ruptura com o Conhecimento Comum e Conflito Cognitivo",
+          question: (conteudo) => `Qual situação do ${conteudo} o conhecimento comum não consegue explicar?`,
+          action: (conteudo) => `Apresenta situações que provocam o conflito entre o saber cotidiano e o fenômeno do ${conteudo}`,
+          templates: [
+            (conteudo, grade) => grade.includes('1ª')
+              ? `Demonstração contraditória orientada: realize uma demonstração em bancada ou exiba um fenômeno de ${conteudo} cujo resultado contrarie o senso comum, solicitando previsões orientadas em ficha de observação antes do desfecho`
+              : grade.includes('3ª')
+                ? `Desafio discrepante autônomo: proponha uma bancada investigativa ou simulação sobre ${conteudo} onde os próprios estudantes executam o teste e confrontam previsões prévias com a anomalia empírica observada`
+                : `Demonstração contraditória: realize uma demonstração ou exiba um fenômeno relacionado ao ${conteudo} cujo resultado contrarie o senso comum; peça previsões antes e explicações depois`,
+            (conteudo, grade) => grade.includes('1ª')
+              ? `Situação do cotidiano com mediação: apresente um dilema cotidiano sobre ${conteudo} em que a explicação intuitiva falha, mediando a pergunta norteadora: 'Por que o senso comum não dá conta desse fenômeno?'`
+              : grade.includes('3ª')
+                ? `Problematização sociocientífica autônoma: apresente um caso real de tecnologia ou ecologia envolvendo ${conteudo} em que raciocínios simplistas falham, desafiando os alunos a formularem o conflito cognitivo central`
+                : `Situação do cotidiano: apresente uma situação cotidiana envolvendo o ${conteudo} que a explicação comum não resolve e pergunte: 'Por que isso acontece?'`,
+            (conteudo, grade) => grade.includes('1ª')
+              ? `Dado surpreendente guiado: exiba um gráfico ou dado experimental sobre ${conteudo} que desmonte a expectativa intuitiva, guiando a leitura das variáveis conflitantes`
+              : grade.includes('3ª')
+                ? `Análise crítica de dados: forneça um corpus de dados experimentais ou artigo sobre ${conteudo} com resultados contra-intuitivos para que os alunos identifiquem criticamente as incoerências do senso comum`
+                : `Dado surpreendente: apresente um dado, gráfico ou notícia sobre o ${conteudo} que conflite com o que os alunos imaginam`
+          ],
+          bncc: "EM13CNT101 — Analisar e representar, com ou sem o uso de dispositivos e de aplicativos digitais específicos, as transformações e conservações em sistemas que envolvam quantidade de matéria, de energia e de movimento para realizar previsões sobre seus comportamentos em situações cotidianas e em processos produtivos que priorizem o desenvolvimento sustentável, o uso consciente dos recursos naturais e a preservação da vida em todas as suas formas (CE 1)",
+          generalCompetency: "Competência Geral 2 (pensamento científico, crítico e criativo)"
+        },
+        {
+          num: 3,
+          code: "3C",
+          name: "Constatação das concepções alternativas",
+          faseClass: "card-fase-3",
+          subtitle: "Fase 3 — Mapeamento de Hipóteses e Reestruturação Teórica",
+          question: (conteudo) => `Quais explicações os alunos construíram para o fenômeno do ${conteudo} e o que elas revelam?`,
+          action: (conteudo) => `Constata as concepções alternativas e media a busca de novas explicações, sem corrigi-las de imediato`,
+          templates: [
+            (conteudo, grade) => grade.includes('1ª')
+              ? `Registro coletivo de hipóteses: registre no quadro e organize em colunas as explicações dos estudantes para o fenômeno do ${conteudo}, categorizando as concepções espontâneas sem juízo de valor ou correção imediata`
+              : grade.includes('3ª')
+                ? `Mapeamento autônomo de modelos mentais: equipes formulam e documentam hipóteses causais explicativas sobre ${conteudo}, defendendo perante a turma o modelo explicativo que adotaram`
+                : `Registro das ideias: registre no quadro ou mural as explicações dos alunos para o fenômeno do ${conteudo}, identificando as concepções alternativas sem corrigi-las ainda`,
+            (conteudo, grade) => grade.includes('1ª')
+              ? `Mediação dialógica de conflitos: conduza a discussão sobre as explicações de ${conteudo}, estimulando a turma com perguntas-chave: 'Essa hipótese explica todas as variáveis observadas?'`
+              : grade.includes('3ª')
+                ? `Confronto dialético entre equipes: promova rodadas de contra-argumentação em que equipes testam a consistência das hipóteses concorrentes sobre ${conteudo}, identificando limites explicativos`
+                : `Mediação de conflitos: conduza o debate das diferentes explicações sobre o ${conteudo}, questionando cada uma: 'Isso explica tudo o que observamos?'`,
+            (conteudo, grade) => grade.includes('1ª')
+              ? `Busca dirigida de explicações alternativas: oriente os grupos com roteiro de pistas conceituais a formular justificativas alternativas para a anomalia do ${conteudo}`
+              : grade.includes('3ª')
+                ? `Investigação autônoma de teorias alternativas: estimule os estudantes a pesquisar autonomamente precursores históricos e hipóteses plausíveis para o fenômeno do ${conteudo}, preparando a reestruturação teórica`
+                : `Busca de teorias alternativas: oriente os grupos a pesquisar e propor explicações alternativas para o fenômeno do ${conteudo}, preparando a reestruturação teórica`
+          ],
+          bncc: "EM13CNT301 — Construir questões, elaborar hipóteses, previsões e estimativas, empregar instrumentos de medição e representar e interpretar modelos explicativos, dados e/ou resultados experimentais para construir, avaliar e justificar conclusões no enfrentamento de situações-problema sob uma perspectiva científica (CE 3); EM13CNT201 — Analisar e discutir modelos, teorias e leis propostos em diferentes épocas e culturas para comparar distintas explicações sobre o surgimento e a evolução da Vida, da Terra e do Cosmos com as teorias científicas aceitas na atualidade (CE 2)",
+          generalCompetency: "Competência Geral 4 (comunicação)"
+        },
+        {
+          num: 4,
+          code: "4C",
+          name: "Comparação com teorias científicas",
+          faseClass: "card-fase-4",
+          subtitle: "Fase 4 — Confronto entre Hipóteses e Modelos Científicos",
+          question: (conteudo) => `Como a teoria científica explica o que os alunos observaram no ${conteudo}?`,
+          action: (conteudo) => `Formula e apresenta as teorias científicas que explicam o ${conteudo}, garantindo a comparação com as ideias anteriores`,
+          templates: [
+            (conteudo, grade) => grade.includes('1ª')
+              ? `Apresentação estruturada da teoria: exponha de modo didático o modelo científico formal que explica o ${conteudo} (aula dialogada, esquemas dinâmicos), retomando diretamente cada concepção espontânea listada na fase 3C`
+              : grade.includes('3ª')
+                ? `Seminário de modelos teóricos: apresente as formulações científicas de fronteira e leis que explicam o ${conteudo}, solicitando que os alunos confrontem com rigor epistemológico os modelos prévios`
+                : `Apresentação da teoria: apresente a teoria científica que explica o ${conteudo} (texto, vídeo, aula dialogada) e retome o registro de ideias da fase anterior`,
+            (conteudo, grade) => grade.includes('1ª')
+              ? `Quadro comparativo guiado: elabore no quadro com apoio dos estudantes a matriz 'O que o senso comum sugeria × O que o modelo científico do ${conteudo} demonstra', pontuando as divergências`
+              : grade.includes('3ª')
+                ? `Matriz comparativa aprofundada: os estudantes constroem autonomamente tabelas de correspondência epistemológica entre as teorias clássicas e contemporâneas do ${conteudo} e as hipóteses da turma`
+                : `Quadro comparativo: construa com a turma o quadro 'o que pensávamos × o que a ciência explica' sobre o ${conteudo}`,
+            (conteudo, grade) => grade.includes('1ª')
+              ? `Análise orientada de textos de divulgação: distribua trechos selecionados de divulgação científica sobre ${conteudo}, auxiliando na identificação dos conceitos formais`
+              : grade.includes('3ª')
+                ? `Análise autônoma de divulgação e artigos científicos: grupos analisam textos originais ou de divulgação qualificada sobre ${conteudo}, julgando consistência de evidências e validade dos modelos`
+                : `Análise de fontes: distribua textos de divulgação científica sobre o ${conteudo} e peça que os grupos identifiquem semelhanças e diferenças com as hipóteses da turma`
+          ],
+          bncc: "EM13CNT201 — Analisar e discutir modelos, teorias e leis propostos em diferentes épocas e culturas para comparar distintas explicações (CE 2); EM13CNT303 — Interpretar textos de divulgação científica que tratem de temáticas das Ciências da Natureza, disponíveis em diferentes mídias, considerando a apresentação dos dados, tanto na forma de textos como em equações, gráficos e/ou tabelas, a consistência dos argumentos e a coerência das conclusões, visando à construção de uma atitude crítico-reflexiva (CE 3)",
+          generalCompetency: "Competência Geral 2 (pensamento científico, crítico e criativo)"
+        },
+        {
+          num: 5,
+          code: "5C",
+          name: "Convergência para uma evolução conceitual",
+          faseClass: "card-fase-5",
+          subtitle: "Fase 5 — Reorganização Conceitual com Recursos Metacognitivos",
+          question: (conteudo) => `Como os alunos reorganizam suas ideias à luz da nova explicação do ${conteudo}?`,
+          action: (conteudo) => `Oferece recursos metacognitivos, tecnológicos e laboratoriais para o aluno reorganizar suas concepções sobre o ${conteudo}`,
+          templates: [
+            (conteudo, grade) => grade.includes('1ª')
+              ? `Mapa conceitual orientado: proponha a construção mediada de um mapa conceitual de ${conteudo}, conectando com auxílio do professor os novos termos científicos aos subsunçores diagnosticados na fase 1C`
+              : grade.includes('3ª')
+                ? `Modelagem e mapa conceitual autônomo: estudantes desenvolvem mapas conceituais hipermidiáticos articulando o ${conteudo} a outros domínios da Física, Química e Biologia, demonstrando autonomia epistêmica`
+                : `Mapa conceitual: proponha a construção de um mapa conceitual do ${conteudo}, conectando os conceitos novos aos subsunçores da fase 1C`,
+            (conteudo, grade) => grade.includes('1ª')
+              ? `Laboratório ou simulação dirigida: realize prática experimental ou use simulador digital (ex.: PhET) com roteiro guiado para que a turma teste e comprove a validade da nova explicação de ${conteudo}`
+              : grade.includes('3ª')
+                ? `Investigação experimental aberta: os alunos planejam e executam simulações virtuais ou ensaios experimentais autônomos para aplicar os modelos de ${conteudo} a novos problemas reais`
+                : `Atividade tecnológica ou laboratorial: proponha um experimento, simulação ou atividade com TDIC que permita aplicar o ${conteudo} e consolidar a nova explicação`,
+            (conteudo, grade) => grade.includes('1ª')
+              ? `Pós-teste formativo e reflexão: aplique o pós-teste (instrumento espelhado ao pré-teste de 1C) e comente as evoluções individuais, valorizando a transição do senso comum para o saber científico sobre ${conteudo}`
+              : grade.includes('3ª')
+                ? `Pós-teste e mensuração do ganho conceitual: aplique o pós-teste e oriente a análise metacognitiva dos estudantes sobre o próprio ganho conceitual de Hake em relação ao ${conteudo}`
+                : `Pós-teste e comparação: aplique o pós-teste (mesmo instrumento do pré-teste da fase 1C) e compare os resultados com a turma, evidenciando a evolução conceitual (ganho de Hake)`
+          ],
+          bncc: "EM13CNT301 — Construir questões, elaborar hipóteses, previsões e estimativas, empregar instrumentos de medição e representar e interpretar modelos explicativos (CE 3); EM13CNT302 — Comunicar, para públicos diversificados, em contextos variados, oralmente, por escrito ou por meio de outras ferramentas da comunicação (incluindo as digitais), resultados, conclusões ou intervenções baseadas em dados e evidências (CE 3)",
+          generalCompetency: "Competências Gerais 2 e 4"
+        },
+        {
+          num: 6,
+          code: "6C",
+          name: "Confirmação por meio de fórmulas",
+          faseClass: "card-fase-6",
+          subtitle: "Fase 6 — Formalização Sistemática e Ferramentas Metacognitivas",
+          question: (conteudo) => `Como formalizar e registrar o que foi aprendido sobre o ${conteudo}?`,
+          action: (conteudo) => `Conduz a formalização e o registro sistemático do aprendizado sobre o ${conteudo}`,
+          templates: [
+            (conteudo, grade) => grade.includes('1ª')
+              ? `Formalização dirigida: sistematize no quadro as relações quantitativas, equações fundamentais, tabelas ou gráficos que regem o ${conteudo}, guiando a correta interpretação das variáveis e grandezas físicas/químicas`
+              : grade.includes('3ª')
+                ? `Formalização matemática e modelagem avançada: conduza a dedução matemática e a representação gráfica das equações e funções que modelam o ${conteudo}, incentivando rigor autônomo na resolução`
+                : `Formalização: conduza o registro sistemático do ${conteudo} em gráficos, tabelas, equações ou diagramas adequados ao componente`,
+            (conteudo, grade) => grade.includes('1ª')
+              ? `Produção representativa em duplas: oriente a criação de infográfico ou esquema visual explicativo que sintetize fórmulas, grandezas e aplicações do ${conteudo}`
+              : grade.includes('3ª')
+                ? `Comunicação científica autoral: estudantes produzem relatórios científicos com rigor analítico, artigos de síntese ou infográficos digitais multissemióticos consolidando a teoria e as fórmulas do ${conteudo}`
+                : `Produção representativa: peça que os alunos produzam um infográfico, fluxograma ou mapa mental que sintetize o ${conteudo}`,
+            (conteudo, grade) => grade.includes('1ª')
+              ? `Quadro SQA com fechamento mediado: preencha com a turma o Quadro SQA (o que Sabia, o que Queria aprender, o que Aprendi) sobre o ${conteudo}, fechando o percurso formativo`
+              : grade.includes('3ª')
+                ? `V Epistemológico de Gowin ou Quadro SQA avançado: aplicação autônoma do V Epistemológico conectando domínio teórico e metodológico ou Quadro SQA analítico sobre o percurso de apreensão do ${conteudo}`
+                : `Quadro SQA ou V epistemológico: aplique o Quadro SQA (o que Sabia, o que Quer saber, o que Aprendeu) ou o V epistemológico sobre o ${conteudo}, fechando o percurso`
+          ],
+          bncc: "EM13CNT302 — Comunicar, para públicos diversificados, em contextos variados, oralmente, por escrito ou por meio de outras ferramentas da comunicação (incluindo as digitais), resultados, conclusões ou intervenções baseadas em dados e evidências, utilizando diferentes mídias e linguagens científicas (textos, gráficos, tabelas, símbolos, códigos e equações) (CE 3); EM13CNT101 — Analisar e representar, com ou sem o uso de dispositivos e de aplicativos digitais específicos, as transformações e conservações em sistemas (CE 1)",
+          generalCompetency: "Competência Geral 4 (comunicação)"
+        }
+      ]
+    };
+
+    /**
+     * Fallback e gerador de objetivos automáticos para Ciências da Natureza (EM)
+     */
+    function buildDefaultObjective(theme, grade) {
+      return `Mobilizar os conhecimentos essenciais sobre "${theme}" em Ciências da Natureza e suas Tecnologias (${grade}), estimulando a transição de concepções espontâneas para modelos científicos consolidados, a investigação empírica e a aplicação crítica em situações tecnológicas, ambientais e cotidianas.`;
+    }
+
+    // Element references
+    const planForm = document.getElementById('planForm');
+    const gradeSelect = document.getElementById('gradeSelect');
+    const themeInput = document.getElementById('themeInput');
+    const objectivesInput = document.getElementById('objectivesInput');
+    const sequenceOutput = document.getElementById('sequenceOutput');
+    const cardsContainer = document.getElementById('cardsContainer');
+    const outputTitleDisplay = document.getElementById('outputTitleDisplay');
+    const metaSubjectBadge = document.getElementById('metaSubjectBadge');
+    const metaGradeBadge = document.getElementById('metaGradeBadge');
+    const metaThemeBadge = document.getElementById('metaThemeBadge');
+    const outputObjectivesText = document.getElementById('outputObjectivesText');
+    const btnPrint = document.getElementById('btnPrint');
+    const btnCopyText = document.getElementById('btnCopyText');
+    const btnReset = document.getElementById('btnReset');
+    const toast = document.getElementById('toast');
+    const toggleOverview = document.getElementById('toggleOverview');
+    const overviewBody = document.getElementById('overviewBody');
+    const overviewChevron = document.getElementById('overviewChevron');
+
+    // Accordion interaction
+    let isOverviewOpen = true;
+    toggleOverview.addEventListener('click', () => {
+      isOverviewOpen = !isOverviewOpen;
+      overviewBody.style.display = isOverviewOpen ? 'grid' : 'none';
+      overviewChevron.innerHTML = isOverviewOpen ? '&#x25B2; Ocultar' : '&#x25BC; Expandir';
+      toggleOverview.setAttribute('aria-expanded', isOverviewOpen ? 'true' : 'false');
+    });
+
+    toggleOverview.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        toggleOverview.click();
+      }
+    });
+
+    // Quick presets handler
+    document.querySelectorAll('.quick-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        gradeSelect.value = btn.getAttribute('data-grade');
+        themeInput.value = btn.getAttribute('data-theme');
+        objectivesInput.value = btn.getAttribute('data-obj');
+        showToast('Exemplo carregado! Clique em "Gerar Sequência Didática".');
+      });
+    });
+
+    // Temporary toast notice
+    function showToast(message) {
+      toast.textContent = message;
+      toast.style.display = 'block';
+      setTimeout(() => {
+        toast.style.display = 'none';
+      }, 3500);
+    }
+
+    // Helper to pick randomly or cycle template
+    function pickTemplate(templates, theme, grade) {
+      if (!templates || templates.length === 0) return '';
+      const idx = Math.floor(Math.random() * templates.length);
+      return templates[idx](theme, grade);
+    }
+
+    // Generate Sequence Logic
+    planForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      
+      const themeVal = themeInput.value.trim();
+      if (!themeVal) {
+        themeInput.focus();
+        showToast('Por favor, informe o conteúdo a ser trabalhado.');
+        return;
+      }
+
+      const gradeVal = gradeSelect.value;
+      const objectivesVal = objectivesInput.value.trim() || buildDefaultObjective(themeVal, gradeVal);
+
+      // Update meta header
+      outputTitleDisplay.textContent = `Sequência didática — ${gradeVal}: ${themeVal}`;
+      metaSubjectBadge.textContent = "Ciências da Natureza e suas Tecnologias (EM)";
+      metaGradeBadge.textContent = gradeVal;
+      metaThemeBadge.innerHTML = `<strong>Conteúdo:</strong>&nbsp;<span>${escapeHtml(themeVal)}</span>`;
+      outputObjectivesText.textContent = objectivesVal;
+
+      // Render cards
+      cardsContainer.innerHTML = '';
+      PILOT_MATRIX.fases.forEach(fase => {
+        const questionText = typeof fase.question === 'function' ? fase.question(themeVal) : fase.question;
+        const actionText = typeof fase.action === 'function' ? fase.action(themeVal) : fase.action;
+        const activityText = pickTemplate(fase.templates, themeVal, gradeVal);
+        
+        let bnccContent = fase.bncc;
+        if (fase.generalCompetency) {
+          bnccContent += `<br><span style="display:inline-block; margin-top:0.35rem; font-weight:600; color:#0f766e;">${fase.generalCompetency}</span>`;
+        }
+
+        const cardEl = document.createElement('article');
+        cardEl.className = `phase-card ${fase.faseClass}`;
+        cardEl.innerHTML = `
+          <header class="phase-card-header">
+            <div class="phase-badge-num">${fase.code}</div>
+            <div class="phase-header-text">
+              <h3>${fase.code} — ${fase.name.toUpperCase()}</h3>
+              <span>${fase.subtitle}</span>
+            </div>
+          </header>
+          <div class="phase-card-body">
+            
+            <div class="section-block">
+              <span class="block-label">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                Pergunta Norteadora
+              </span>
+              <div class="block-content highlight-question">
+                "${escapeHtml(questionText)}"
+              </div>
+            </div>
+
+            <div class="section-block">
+              <span class="block-label">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                Ação do Professor
+              </span>
+              <div class="block-content">
+                ${escapeHtml(actionText)}
+              </div>
+            </div>
+
+            <div class="section-block">
+              <span class="block-label">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                Sugestão de Atividade
+              </span>
+              <div class="block-content" style="font-weight: 500;">
+                ${escapeHtml(activityText)}
+              </div>
+            </div>
+
+            <div class="bncc-box">
+              <strong>Habilidades / Competências BNCC (Ensino Médio)</strong>
+              ${bnccContent}
+            </div>
+
+          </div>
+        `;
+        cardsContainer.appendChild(cardEl);
+      });
+
+      sequenceOutput.style.display = 'block';
+      sequenceOutput.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      showToast('Sequência didática gerada com sucesso!');
+    });
+
+    // Reset button
+    btnReset.addEventListener('click', () => {
+      themeInput.value = '';
+      objectivesInput.value = '';
+      sequenceOutput.style.display = 'none';
+      themeInput.focus();
+      showToast('Formulário pronto para nova sequência.');
+    });
+
+    // Print / PDF button
+    btnPrint.addEventListener('click', () => {
+      window.print();
+    });
+
+    // Copy textual version
+    btnCopyText.addEventListener('click', () => {
+      const theme = themeInput.value;
+      const grade = gradeSelect.value;
+      const obj = outputObjectivesText.textContent;
+      
+      let fullText = `PLANO DE SEQUÊNCIA DIDÁTICA (METODOLOGIA 6C/PCMA)\n`;
+      fullText += `=====================================================\n`;
+      fullText += `Sequência didática — ${grade}\n`;
+      fullText += `Componente-Piloto: Ciências da Natureza e suas Tecnologias (Ensino Médio)\n`;
+      fullText += `Conteúdo a ser trabalhado: ${theme}\n`;
+      fullText += `Objetivos de aprendizagem: ${obj}\n\n`;
+
+      const cards = cardsContainer.querySelectorAll('.phase-card');
+      cards.forEach((card) => {
+        const title = card.querySelector('.phase-header-text h3').textContent;
+        const question = card.querySelector('.highlight-question').textContent.trim();
+        const action = card.querySelectorAll('.section-block .block-content')[1].textContent.trim();
+        const activity = card.querySelectorAll('.section-block .block-content')[2].textContent.trim();
+        const bncc = card.querySelector('.bncc-box').textContent.trim();
+
+        fullText += `-----------------------------------------------------\n`;
+        fullText += `${title}\n`;
+        fullText += `Pergunta Norteadora: ${question}\n`;
+        fullText += `Ação do Professor: ${action}\n`;
+        fullText += `Sugestão de Atividade: ${activity}\n`;
+        fullText += `${bncc}\n\n`;
+      });
+
+      fullText += `PCMA: Procedimento Cognitivo Metodológico de Apreensão · RENOEN/IFCE\n`;
+
+      navigator.clipboard.writeText(fullText).then(() => {
+        showToast('Texto completo copiado para a área de transferência!');
+      }).catch(() => {
+        showToast('Não foi possível copiar automaticamente. Use a impressão como PDF.');
+      });
+    });
+
+    // Security helper
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    // Auto-generate initial state for immediate demonstration
+    window.addEventListener('DOMContentLoaded', () => {
+      gradeSelect.value = "1ª série do Ensino Médio";
+      themeInput.value = "Termodinâmica e propagação de calor";
+      objectivesInput.value = "Compreender as transformações e transferências de calor superando concepções espontâneas e aplicando os modelos científicos da Termodinâmica.";
+      document.getElementById('btnGenerate').click();
+    });
+  </script>
+<script>
+/* Skip artifact shell — fixed helpers served beside every artifact. */
+(function () {
+  "use strict";
+
+  var fmt = {
+    num: function (v, opts) { return new Intl.NumberFormat("pt-BR", opts || {}).format(v); },
+    brl: function (v) { return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(v); },
+    pct: function (v) { return new Intl.NumberFormat("pt-BR", { style: "percent", maximumFractionDigits: 1 }).format(v); }
+  };
+
+  // axisFmt keeps axis tick labels short (compact notation) so long values
+  // (e.g. full BRL amounts) never clip against the plot edge.
+  function axisFmt(v) {
+    return fmt.num(v, { notation: "compact", maximumFractionDigits: 1 });
+  }
+
+  // format accepts a function OR one of the fmt names ("num" | "brl" | "pct").
+  function coerceFormat(spec) {
+    if (typeof spec === "function") return spec;
+    if (typeof spec === "string" && fmt[spec]) return fmt[spec];
+    return function (v) { return fmt.num(v); };
+  }
+
+  function accent() {
+    return getComputedStyle(document.documentElement).getPropertyValue("--accent").trim() || "#2563eb";
+  }
+  function mutedColor() {
+    return getComputedStyle(document.documentElement).getPropertyValue("--text-muted").trim() || "#5b6472";
+  }
+  function svgEl(tag, attrs) {
+    var el = document.createElementNS("http://www.w3.org/2000/svg", tag);
+    for (var k in attrs) el.setAttribute(k, attrs[k]);
+    return el;
+  }
+  function frame(el, w, h) {
+    var svg = svgEl("svg", { viewBox: "0 0 " + w + " " + h, role: "img" });
+    el.innerHTML = "";
+    el.appendChild(svg);
+    return svg;
+  }
+
+  // maxOf guards the axis scale: empty values would give -Infinity (truthy,
+  // so "|| 1" can't catch it) and a non-positive max would flip the chart.
+  function maxOf(values) {
+    var m = values.length ? Math.max.apply(null, values) : 0;
+    return m > 0 ? m : 1;
+  }
+
+  // bar(el, {labels:[], values:[], color?, format?}) — vertical bar chart.
+  function bar(el, cfg) {
+    var W = 640, H = 280, padL = 46, padB = 30, padT = 12;
+    var svg = frame(el, W, H);
+    var max = maxOf(cfg.values);
+    var n = cfg.values.length;
+    var plotW = W - padL - 12, plotH = H - padT - padB;
+    var step = plotW / n, bw = Math.min(step * 0.62, 64);
+    var color = cfg.color || accent();
+    var f = coerceFormat(cfg.format);
+    for (var g = 0; g <= 4; g++) {
+      var gy = padT + plotH - (plotH * g) / 4;
+      svg.appendChild(svgEl("line", { x1: padL, y1: gy, x2: W - 12, y2: gy, stroke: "currentColor", "stroke-opacity": 0.08 }));
+      var lbl = svgEl("text", { x: padL - 8, y: gy + 4, "text-anchor": "end", "font-size": 10, fill: mutedColor() });
+      lbl.textContent = axisFmt((max * g) / 4);
+      svg.appendChild(lbl);
+    }
+    cfg.values.forEach(function (v, i) {
+      var bh = Math.max(0, (v / max) * plotH);
+      var x = padL + i * step + (step - bw) / 2;
+      var y = padT + plotH - bh;
+      var r = svgEl("rect", { x: x, y: y, width: bw, height: bh, rx: 4, fill: color });
+      var t = svgEl("title", {});
+      t.textContent = cfg.labels[i] + ": " + f(v);
+      r.appendChild(t);
+      svg.appendChild(r);
+      var tx = svgEl("text", { x: x + bw / 2, y: H - 10, "text-anchor": "middle", "font-size": 11, fill: mutedColor() });
+      tx.textContent = cfg.labels[i];
+      svg.appendChild(tx);
+    });
+  }
+
+  // line(el, {labels:[], values:[], color?, format?}) — single-series line.
+  function line(el, cfg) {
+    var W = 640, H = 280, padL = 46, padB = 30, padT = 12;
+    var svg = frame(el, W, H);
+    var max = maxOf(cfg.values);
+    var n = cfg.values.length;
+    var plotW = W - padL - 16, plotH = H - padT - padB;
+    var color = cfg.color || accent();
+    var f = coerceFormat(cfg.format);
+    for (var g = 0; g <= 4; g++) {
+      var gy = padT + plotH - (plotH * g) / 4;
+      svg.appendChild(svgEl("line", { x1: padL, y1: gy, x2: W - 16, y2: gy, stroke: "currentColor", "stroke-opacity": 0.08 }));
+      var lbl = svgEl("text", { x: padL - 8, y: gy + 4, "text-anchor": "end", "font-size": 10, fill: mutedColor() });
+      lbl.textContent = axisFmt((max * g) / 4);
+      svg.appendChild(lbl);
+    }
+    var pts = cfg.values.map(function (v, i) {
+      var x = padL + (n === 1 ? plotW / 2 : (plotW * i) / (n - 1));
+      var y = padT + plotH - (v / max) * plotH;
+      return [x, y];
+    });
+    var d = pts.map(function (p, i) { return (i ? "L" : "M") + p[0].toFixed(1) + " " + p[1].toFixed(1); }).join(" ");
+    svg.appendChild(svgEl("path", { d: d, fill: "none", stroke: color, "stroke-width": 2, "stroke-linejoin": "round" }));
+    pts.forEach(function (p, i) {
+      var c = svgEl("circle", { cx: p[0], cy: p[1], r: 3.5, fill: color });
+      var t = svgEl("title", {});
+      t.textContent = cfg.labels[i] + ": " + f(cfg.values[i]);
+      c.appendChild(t);
+      svg.appendChild(c);
+      var tx = svgEl("text", { x: p[0], y: H - 10, "text-anchor": "middle", "font-size": 11, fill: mutedColor() });
+      tx.textContent = cfg.labels[i];
+      svg.appendChild(tx);
+    });
+  }
+
+  // donut(el, {labels:[], values:[], colors?}) — donut with center total.
+  function donut(el, cfg) {
+    var W = 320, H = 280, cx = W / 2, cy = H / 2, R = 92, r = 58;
+    var svg = frame(el, W, H);
+    var total = cfg.values.reduce(function (a, b) { return a + b; }, 0) || 1;
+    var palette = cfg.colors || [accent(), "#1baf7a", "#eda100", "#e34948", "#4a3aa7", "#e87ba4"];
+    var a0 = -Math.PI / 2;
+    cfg.values.forEach(function (v, i) {
+      var a1 = a0 + (v / total) * Math.PI * 2;
+      var large = a1 - a0 > Math.PI ? 1 : 0;
+      var p = ["M", cx + R * Math.cos(a0), cy + R * Math.sin(a0),
+        "A", R, R, 0, large, 1, cx + R * Math.cos(a1), cy + R * Math.sin(a1),
+        "L", cx + r * Math.cos(a1), cy + r * Math.sin(a1),
+        "A", r, r, 0, large, 0, cx + r * Math.cos(a0), cy + r * Math.sin(a0), "Z"].join(" ");
+      var path = svgEl("path", { d: p, fill: palette[i % palette.length] });
+      var t = svgEl("title", {});
+      t.textContent = cfg.labels[i] + ": " + fmt.num(v) + " (" + fmt.pct(v / total) + ")";
+      path.appendChild(t);
+      svg.appendChild(path);
+      a0 = a1;
+    });
+    var center = svgEl("text", { x: cx, y: cy + 5, "text-anchor": "middle", "font-size": 20, "font-weight": 650, fill: "currentColor" });
+    center.textContent = fmt.num(total);
+    svg.appendChild(center);
+  }
+
+  window.skipShell = { fmt: fmt };
+  window.skipChart = { bar: bar, line: line, donut: donut };
+})();
+
+</script>
+</body>
+</html>
